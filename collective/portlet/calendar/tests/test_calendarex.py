@@ -45,7 +45,8 @@ class TestPortlet(PortletsTestCase):
             del mapping[m]
         addview = mapping.restrictedTraverse('+/' + portlet.addview)
         
-        addview(name='My Calendar',root=u'')
+        addview.createAndAdd(data={'name':'My Calendar',
+                                   'root':u''})
 
         self.assertEquals(len(mapping), 1)
         self.failUnless(isinstance(mapping.values()[0], calendar.Assignment))
@@ -75,7 +76,7 @@ class TestRenderer(PortletsTestCase):
         assignment = assignment or calendar.Assignment()
 
         return getMultiAdapter((context, request, view, manager, assignment), IPortletRenderer)
-
+    
     def test_event_created_last_day_of_month_invalidate_cache(self):
         # First render the calendar portlet when there's no events
         r = self.renderer(assignment=calendar.Assignment())

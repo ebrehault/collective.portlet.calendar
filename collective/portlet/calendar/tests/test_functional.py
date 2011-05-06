@@ -13,6 +13,9 @@ from Products.PloneTestCase.layer import PloneSite
 from Products.PloneTestCase.layer import onsetup
 
 import collective.portlet.calendar
+
+PRODUCTS = []
+
 def hacked_import(name):
     mod = __import__(name)
     components = name.split('.')
