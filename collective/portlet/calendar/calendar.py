@@ -37,6 +37,7 @@ def _render_cachekey(fun, self):
     else:
         portal_state = getMultiAdapter((context, self.request), name=u'plone_portal_state')
         key = StringIO()
+        print >> key, self.data.kw
         print >> key, portal_state.navigation_root_url()
         print >> key, cache.get_language(context, self.request)
         print >> key, self.calendar.getFirstWeekDay()
