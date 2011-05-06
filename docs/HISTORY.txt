@@ -4,4 +4,14 @@ Changelog
 0.5 - Unreleased
 ----------------
 
+* Providing a base css to our portlet
+  [erico_andrei]
+
+* Allows restricting the results to only a subset of the site 
+  [erico_andrei]
+
+* Adding portlet name/title 
+  [erico_andrei]
+
 * Initial release
+  [erico_andrei]

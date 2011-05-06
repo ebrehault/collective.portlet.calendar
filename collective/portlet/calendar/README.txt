@@ -1,11 +1,19 @@
 .. contents:: Table of Contents
    :depth: 2
 
-collective.portlet.calendar
+Extended Calendar Portlet
 ****************************************
 
 Overview
 --------
+
+This package provides a configurable implementation of a Calendar Portlet. It is 
+possible to give the portlet a header and constrain its results to only a 
+subset -- an area -- of your site.
+
+Even though Plone's default Calendar Portlet implementation is useful for most 
+sites if you want to segment calendar's events or to provide more than one 
+calendar per page, Extended Calendar Portlet comes to rescue.
 
 Requirements
 ------------
@@ -17,26 +25,14 @@ Installation
     
 To enable this product,on a buildout based installation:
 
-    1. Edit your buildout.cfg and add ``collective.portlet.calendar``
+    1) Edit your buildout.cfg and add ``collective.portlet.calendar``
        to the list of eggs to install ::
-
+       
         [buildout]
         ...
         eggs = 
-            collective.portlet.calendar
-
-    2. Tell the plone.recipe.zope2instance recipe to install a ZCML slug::
-
-        [instance]
-        ...
-        zcml = 
-            ...
-            collective.portlet.calendar
-    
-
-If another package depends on the collective.portlet.calendar egg or 
-includes its zcml directly you do not need to specify anything in the 
-buildout configuration: buildout will detect this automatically.
+             collective.portlet.calendar
+        
 
 After updating the configuration you need to run the ''bin/buildout'',
 which will take care of updating your system.
@@ -55,13 +51,12 @@ in order to see the effects of the product installation.
 Sponsoring
 ----------
 
-Development of this product was sponsored by `Simples Consultoria 
-<http://www.simplesconsultoria.com.br/>`_.
+Development of this product was sponsored by `TRT13 <http://www.trt13.jus.br>`_.
 
 
 Credits
 -------
-
+    
     * Simples Consultoria (products at simplesconsultoria dot com dot br) - 
       Implementation
     
