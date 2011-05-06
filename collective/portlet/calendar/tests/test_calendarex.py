@@ -13,7 +13,6 @@ from DateTime import DateTime
 from collective.portlet.calendar import calendar
 from plone.app.portlets.tests.base import PortletsTestCase
 
-
 class TestPortlet(PortletsTestCase):
 
     def afterSetUp(self):
@@ -51,6 +50,20 @@ class TestPortlet(PortletsTestCase):
         self.assertEquals(len(mapping), 1)
         self.failUnless(isinstance(mapping.values()[0], calendar.Assignment))
 
+    def testPortletProperties(self):
+        portlet = getUtility(IPortletType, name='portlets.CalendarEx')
+        mapping = self.portal.restrictedTraverse('++contextportlets++plone.leftcolumn')
+        for m in mapping.keys():
+            del mapping[m]
+        addview = mapping.restrictedTraverse('+/' + portlet.addview)
+        addview.createAndAdd(data={'name':'My Calendar',
+                                   'root':u''})
+        title = mapping.values()[0].title
+        root = mapping.values()[0].root
+        self.assertEqual(title,'My Calendar')
+        self.assertEqual(root, u'')
+        
+
     def testRenderer(self):
         context = self.folder
         request = self.folder.REQUEST
@@ -67,6 +80,7 @@ class TestRenderer(PortletsTestCase):
     def afterSetUp(self):
         setHooks()
         setSite(self.portal)
+        self.portal_path = '/'.join(self.portal.getPhysicalPath())
 
     def renderer(self, context=None, request=None, view=None, manager=None, assignment=None):
         context = context or self.folder
@@ -76,6 +90,50 @@ class TestRenderer(PortletsTestCase):
         assignment = assignment or calendar.Assignment()
 
         return getMultiAdapter((context, request, view, manager, assignment), IPortletRenderer)
+    
+    def countEventsInPortlet(self,dates):
+        weeks = [w for w in dates]
+        days = []
+        for week in weeks:
+            for day in week:
+                days.append(day)
+        eventsbyday = [len(d['eventslist']) for d in days if d['day']>0]
+        return sum(eventsbyday)
+    
+    def createEvents(self):
+        p = self.portal
+        self.setRoles(('Manager',))
+        # Create subfolders
+        p.invokeFactory('Folder', 'folder1',)
+        p.portal_workflow.doActionFor(p.folder1, 'publish')
+        p.invokeFactory('Folder', 'folder2',)
+        p.portal_workflow.doActionFor(p.folder2, 'publish')
+        
+        # We will add 3 events. On the root folder and on each subfolder
+        # Root event
+        start,end = self.genDates(delta=0)
+        p.invokeFactory('Event','e1', startDate=start, endDate=end)
+        p.portal_workflow.doActionFor(p.e1,'publish')
+        
+        # Folder1 event
+        start,end = self.genDates(delta=1)
+        p.folder1.invokeFactory('Event','e2', startDate=start, endDate=end)
+        p.portal_workflow.doActionFor(p.folder1.e2,'publish')
+        
+        # Folder2 event
+        start,end = self.genDates(delta=2)
+        p.folder2.invokeFactory('Event','e3', startDate=start, endDate=end)
+        p.portal_workflow.doActionFor(p.folder2.e3,'publish')
+        
+    
+    def genDates(self,delta):
+        now = DateTime()
+        year, month = now.year(),now.month()
+        date = DateTime('%s/%s/1' % (year, month))
+        hour = 1 / 24.0
+        start = date + delta + 23*hour
+        end = date + delta + 23.5*hour
+        return (start,end)
     
     def test_event_created_last_day_of_month_invalidate_cache(self):
         # First render the calendar portlet when there's no events
@@ -87,11 +145,11 @@ class TestRenderer(PortletsTestCase):
         year, month = r.getNextMonth(year, month)
         last_day_month = DateTime('%s/%s/1' % (year, month)) - 1
         hour = 1 / 24.0
+        start = last_day_month + 23*hour
+        end = last_day_month + 23.5*hour
         self.setRoles(('Manager',))
         # Event starts at 23:00 and ends at 23:30
-        self.portal.invokeFactory('Event', 'e1',
-                                  startDate=last_day_month + 23*hour,
-                                  endDate=last_day_month + 23.5*hour)
+        self.portal.invokeFactory('Event', 'e1', startDate=start, endDate=end)
 
         # Make sure to publish this event
         self.portal.portal_workflow.doActionFor(self.portal.e1, 'publish')
@@ -100,6 +158,29 @@ class TestRenderer(PortletsTestCase):
         r = self.renderer(assignment=calendar.Assignment())
         self.assertNotEqual(html, r.render(), "Cache key wasn't invalidated")
 
+    def testEventsSearch(self):
+        # Create the events
+        self.createEvents()
+        # Render a portlet without a root assignment
+        path = '%s' % self.portal_path
+        r = self.renderer(assignment=calendar.Assignment())
+        html = r.render()
+        self.assertEqual(r.root(), path)
+        self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),3)
+        
+        # Render a portlet with a root assignment to folder1
+        path = 'folder1'
+        r = self.renderer(assignment=calendar.Assignment(root=path))
+        html = r.render()
+        self.assertEqual(r.root(),'%s/%s' % (self.portal_path,path))
+        self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),1)
+        
+        # Render a portlet with a root assignment to folder2
+        path = 'folder2'
+        r = self.renderer(assignment=calendar.Assignment(root=path))
+        html = r.render()
+        self.assertEqual(r.root(),'%s/%s' % (self.portal_path,path))
+        self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),1)
 
 def test_suite():
     from unittest import TestSuite, makeSuite
