@@ -113,16 +113,25 @@ class TestRenderer(PortletsTestCase):
         # Root event
         start,end = self.genDates(delta=0)
         p.invokeFactory('Event','e1', startDate=start, endDate=end)
+        o = p['e1']
+        o.setSubject(['Meeting',])
+        o.reindexObject()
         p.portal_workflow.doActionFor(p.e1,'publish')
         
         # Folder1 event
         start,end = self.genDates(delta=1)
         p.folder1.invokeFactory('Event','e2', startDate=start, endDate=end)
+        o = p.folder1['e2']
+        o.setSubject(['Meeting',])
+        o.reindexObject()
         p.portal_workflow.doActionFor(p.folder1.e2,'publish')
         
         # Folder2 event
         start,end = self.genDates(delta=2)
         p.folder2.invokeFactory('Event','e3', startDate=start, endDate=end)
+        o = p.folder2['e3']
+        o.setSubject(['Party','OpenBar',])
+        o.reindexObject()
         p.portal_workflow.doActionFor(p.folder2.e3,'publish')
         
     
@@ -158,7 +167,7 @@ class TestRenderer(PortletsTestCase):
         r = self.renderer(assignment=calendar.Assignment())
         self.assertNotEqual(html, r.render(), "Cache key wasn't invalidated")
 
-    def testEventsSearch(self):
+    def testEventsPathSearch(self):
         # Create the events
         self.createEvents()
         # Render a portlet without a root assignment
@@ -181,6 +190,37 @@ class TestRenderer(PortletsTestCase):
         html = r.render()
         self.assertEqual(r.root(),'%s/%s' % (self.portal_path,path))
         self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),1)
+
+    def testEventsKwSearch(self):
+        # Create the events
+        self.createEvents()
+        # Render a portlet without a root assignment
+        path = '%s' % self.portal_path
+        r = self.renderer(assignment=calendar.Assignment())
+        html = r.render()
+        self.assertEqual(r.root(), path)
+        self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),3)
+        
+        # Render a portlet showing only Meetings
+        kw = ['Meeting',]
+        r = self.renderer(assignment=calendar.Assignment(kw=kw))
+        html = r.render()
+        self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),2)
+        
+        # Render a portlet showing only Parties
+        kw = ['Party',]
+        r = self.renderer(assignment=calendar.Assignment(kw=kw))
+        html = r.render()
+        self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),1)
+        
+        # Render a portlet showing Meetings under folder1
+        kw = ['Meeting',]
+        path = 'folder1'
+        r = self.renderer(assignment=calendar.Assignment(root=path, kw=kw))
+        html = r.render()
+        self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),1)
+        self.assertEqual(r.root(),'%s/%s' % (self.portal_path,path))
+    
 
 def test_suite():
     from unittest import TestSuite, makeSuite

@@ -90,6 +90,11 @@ class ICalendarExPortlet(IPortletDataProvider):
             required=False,
             source=SearchableTextSourceBinder({'is_folderish': True},
                                               default_query='path:'))
+    kw = schema.Tuple(title=_(u"Keywords"),
+                     description=_(u"Keywords to be search for."),
+                     default=(),
+                     value_type=schema.TextLine()
+                     )
 
 class Assignment(base.Assignment):
     implements(ICalendarExPortlet)
@@ -97,11 +102,13 @@ class Assignment(base.Assignment):
     title = _(u'Calendar Extended')
     name = u''
     root = None
+    kw = []
     
-    def __init__(self, name='' ,root=None):
+    def __init__(self, name='' ,root=None,kw=[]):
         self.title = name or _(u'Calendar Extended')
         self.name = name
         self.root = root
+        self.kw = kw
     
 class Renderer(base.Renderer):
     _template = ViewPageTemplateFile('calendar.pt')
@@ -139,7 +146,12 @@ class Renderer(base.Renderer):
         year = self.year
         month = self.month
         navigation_root_path = self.root()
-        weeks = self.calendar.getEventsForCalendar(month, year, path=navigation_root_path)
+        kw = self.data.kw
+        options = {}
+        options['path'] = navigation_root_path
+        if kw:
+            options['Subject'] = kw
+        weeks = self.calendar.getEventsForCalendar(month, year, **options)
         for week in weeks:
             for day in week:
                 daynumber = day['day']
@@ -164,7 +176,8 @@ class AddForm(base_portlet.AddForm):
 
     def create(self, data):
         return Assignment(name=data.get('name', u""),
-                         root=data.get('root', u""))
+                          root=data.get('root', u""),
+                          kw=data.get('kw', u""))
 
 
 class EditForm(base_portlet.EditForm):
