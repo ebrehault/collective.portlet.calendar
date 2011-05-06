@@ -1,0 +1,7 @@
+<layers>
+ <layer
+     name="CalendarEx"
+     interface="collective.portlet.calendar.browser.interfaces.ICalendarExLayer"
+     remove="True"
+     />
+</layers>
