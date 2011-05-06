@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<portlets>
+ <portlet
+   addview="portlets.CalendarEx"
+  remove="True">
+ </portlet>
+</portlets>
