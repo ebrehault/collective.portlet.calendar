@@ -62,24 +62,6 @@ class TestCase(ptc.PloneTestCase):
 def test_suite():
     return unittest.TestSuite([
 
-        # Unit tests
-        #doctestunit.DocFileSuite(
-        #    'README.txt', package='collective.portlet.calendar',
-        #    setUp=testing.setUp, tearDown=testing.tearDown),
-
-        #doctestunit.DocTestSuite(
-        #    module='collective.portlet.calendar.mymodule',
-        #    setUp=testing.setUp, tearDown=testing.tearDown),
-
-
-        # Integration tests that use PloneTestCase
-        ztc.ZopeDocFileSuite(
-            'README.txt', package='collective.portlet.calendar.docs',
-            optionflags=doctest.REPORT_ONLY_FIRST_FAILURE |
-                         doctest.NORMALIZE_WHITESPACE |
-                         doctest.ELLIPSIS,
-            test_class=TestCase),
-
         ztc.FunctionalDocFileSuite(
             'browser.txt',
             package='collective.portlet.calendar.docs',
