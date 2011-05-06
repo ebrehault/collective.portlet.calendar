@@ -8,8 +8,8 @@
 
  <portlet
    addview="portlets.CalendarEx"
-   title="Calendar Extended portlet"
-   description="A portlet which can render a calendar."
+   title="Extended Calendar portlet"
+   description="A configurable portlet which renders a calendar."
    i18n:attributes="title;
                     description"
    >
