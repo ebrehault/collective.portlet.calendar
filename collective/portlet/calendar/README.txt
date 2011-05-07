@@ -57,8 +57,8 @@ in order to see the effects of the product installation.
 Contributing
 --------------
 
-    Code repository and isssue tracker can be found at 
-    `BitBucket <https://svn.plone.org/svn/collective/collective.portlet.calendar>`_
+    Code repository can be found at
+    `Plone Collective <https://svn.plone.org/svn/collective/collective.portlet.calendar>`_
 
 Sponsoring
 ----------
