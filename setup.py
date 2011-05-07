@@ -6,7 +6,7 @@ version = open(os.path.join("collective", "portlet", "calendar", "version.txt"))
 
 setup(name='collective.portlet.calendar',
       version=version,
-      description="",
+      description="Extended Calendar Portlet: A configurable implementation of a Calendar Portlet for Plone.",
       long_description=open(os.path.join("collective", "portlet", "calendar", "README.txt")).read() + "\n" +
                        open(os.path.join("docs", "HISTORY.txt")).read(),
       # Get more strings from http://www.python.org/pypi?%3Aaction=list_classifiers
@@ -17,10 +17,10 @@ setup(name='collective.portlet.calendar',
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
         ],
-      keywords='',
-      author='',
-      author_email='',
-      url='http://svn.plone.org/svn/collective/',
+      keywords='plone plone4 portlet calendar web',
+      author='Simples Consultoria',
+      author_email='products@simplesconsultoria.com.br',
+      url='https://bitbucket.org/simplesconsultoria/collective.portlet.calendar',
       license='GPL',
       packages=find_packages(exclude=['ez_setup']),
       namespace_packages=['collective', 'collective.portlet'],
