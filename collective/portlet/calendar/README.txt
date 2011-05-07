@@ -58,7 +58,7 @@ Contributing
 --------------
 
     Code repository and isssue tracker can be found at 
-    `BitBucket <https://bitbucket.org/simplesconsultoria/collective.portlet.calendar>`_
+    `BitBucket <https://svn.plone.org/svn/collective/collective.portlet.calendar>`_
 
 Sponsoring
 ----------
