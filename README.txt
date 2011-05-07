@@ -19,7 +19,7 @@ calendar per page, Extended Calendar Portlet comes to rescue.
 Screenshot
 -----------
 
-    .. image:: http://www.simplesconsultoria.com.br/tecnologia/plone/produtos/collective.portlet.calendar/collective.portlet.calendar-0.5-screenshot.png/image_preview
+    .. image:: http://www.simplesconsultoria.com.br/tecnologia/plone/produtos/collective.portlet.calendar/collective.portlet.calendar-0.5-screenshot.png/image_preview?
 
 Requirements
 ------------
@@ -34,10 +34,10 @@ To enable this product,on a buildout based installation:
     1) Edit your buildout.cfg and add ``collective.portlet.calendar``
        to the list of eggs to install ::
     
-       [buildout]
-       ...
-       eggs = 
-            collective.portlet.calendar
+        [buildout]
+        ...
+        eggs = 
+             collective.portlet.calendar
     
 
 After updating the configuration you need to run the ''bin/buildout'',
