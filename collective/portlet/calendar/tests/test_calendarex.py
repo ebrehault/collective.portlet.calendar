@@ -193,18 +193,21 @@ class TestRenderer(PortletsTestCase):
         # Render a portlet without a root assignment
         path = self.portal_path
         r = self.renderer(assignment=calendar.Assignment())
+        r.update()
         self.assertEqual(r.root(), path)
         self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),3)
         
         # Render a portlet with a root assignment to folder1
         path = '/folder1'
         r = self.renderer(assignment=calendar.Assignment(root=path))
+        r.update()
         self.assertEqual(r.root(), '%s%s' % (self.portal_path, path))
         self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),1)
         
         # Render a portlet with a root assignment to folder2
         path = '/folder2'
         r = self.renderer(assignment=calendar.Assignment(root=path))
+        r.update()
         self.assertEqual(r.root(), '%s%s' % (self.portal_path, path))
         self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),1)
         
@@ -215,6 +218,7 @@ class TestRenderer(PortletsTestCase):
         self.createTopic()
         path = '/example-events'
         r = self.renderer(assignment=calendar.Assignment(root=path, kw=['Foo',]))
+        r.update()
         # kw are ignored and also content type, so all events are displayed
         self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()), 2)
         # adding a new criteria to the collection change results
@@ -228,23 +232,27 @@ class TestRenderer(PortletsTestCase):
         # Render a portlet without a root assignment
         path = '%s' % self.portal_path
         r = self.renderer(assignment=calendar.Assignment())
+        r.update()
         self.assertEqual(r.root(), path)
         self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),3)
         
         # Render a portlet showing only Meetings
         kw = ['Meeting',]
         r = self.renderer(assignment=calendar.Assignment(kw=kw))
+        r.update()
         self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),2)
         
         # Render a portlet showing only Parties
         kw = ['Party',]
         r = self.renderer(assignment=calendar.Assignment(kw=kw))
+        r.update()
         self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),1)
         
         # Render a portlet showing Meetings under folder1
         kw = ['Meeting',]
         path = '/folder1'
         r = self.renderer(assignment=calendar.Assignment(root=path, kw=kw))
+        r.update()
         self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),1)
         self.assertEqual(r.root(),'%s%s' % (self.portal_path, path))
     
