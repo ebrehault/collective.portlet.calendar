@@ -4,6 +4,12 @@ Changelog
 0.6 (unreleased)
 ----------------
 
+* Added Italian translation
+  [keul]
+
+* Added Brazilian Portuguese translation
+  [erico_andrei]
+
 * Now also Plone 3.3 compatible 
   [keul]
 
