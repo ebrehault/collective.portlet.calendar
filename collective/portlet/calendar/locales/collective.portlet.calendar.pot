@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2009-02-27 17:49+0000\n"
+"POT-Creation-Date: 2011-05-19 14:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -12,5 +12,59 @@ msgstr ""
 "Language-Code: en\n"
 "Language-Name: English\n"
 "Preferred-Encodings: utf-8 latin1\n"
-"Domain: collective.portlet.calendar\n"
+"Domain: DOMAIN\n"
+
+#: ../calendar.py:237
+msgid "Add Calendar Extended Portlet"
+msgstr ""
+
+#: ../calendar.py:136
+msgid "Calendar Extended"
+msgstr ""
+
+#: ../calendar.py:247
+msgid "Edit Calendar Extended Portlet"
+msgstr ""
+
+#: ../calendar.py:124
+msgid "Keywords"
+msgstr ""
+
+#: ../calendar.py:114
+msgid "Review state"
+msgstr ""
+
+#: ../calendar.py:238
+msgid "This calendar portlet allows choosing a subpath."
+msgstr ""
+
+#. Default: "You may search for and choose a folder to act as the root of search for this portlet. Leave blank to use the Plone site root. You can also select a Collection for get only Events found by it."
+#: ../calendar.py:102
+msgid "help_calendarex_root"
+msgstr ""
+
+#. Default: "The title of this portlet. Leave blank to do not display portlet title."
+#: ../calendar.py:94
+msgid "help_calendarex_title"
+msgstr ""
+
+#. Default: "Keywords to be search for. This filter will be ignored if you select a collection as \"Root node\""
+#: ../calendar.py:125
+msgid "help_keywords"
+msgstr ""
+
+#. Default: "Filter contents using the review state. Leave blank to use the site default. This filter will be ignored if you select a collection as \"Root node\""
+#: ../calendar.py:115
+msgid "help_review_state"
+msgstr ""
+
+#. Default: "Root node"
+#: ../calendar.py:101
+msgid "label_calendarex_root_path"
+msgstr ""
+
+#. Default: "Title"
+#: ../calendar.py:93
+msgid "label_calendarex_title"
+msgstr ""
 
