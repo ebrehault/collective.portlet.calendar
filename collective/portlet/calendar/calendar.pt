@@ -77,12 +77,14 @@
                                         tal:condition="day_event"
                                         tal:attributes="class python:is_today and 'todayevent' or 'event'"
                                        ><strong><a href=""
+									       tal:condition="python:not view.rootTopic()"
                                            tal:attributes="href string:${navigation_root_url}/search?${view/getReviewStateString}start.query:record:list:date=${day/date_string}+23%3A59%3A59&amp;start.range:record=max&amp;end.query:record:list:date=${day/date_string}+00%3A00%3A00&amp;end.range:record=min&amp;path=${view/root};
                                                            title day/eventstring;"
-                                           tal:content="daynumber">
-                                           31
-                                       </a
-                                    ></strong></td
+                                           tal:content="daynumber" /><a href=""
+									       tal:condition="python:view.rootTopic()"
+                                           tal:attributes="href string:${navigation_root_url}/search?start.query:record:list:date=${day/date_string}+23%3A59%3A59&amp;start.range:record=max&amp;end.query:record:list:date=${day/date_string}+00%3A00%3A00&amp;end.range:record=min;
+                                                           title day/eventstring;"
+                                           tal:content="daynumber" /></strong></td
                                     ><tal:notdayevent tal:condition="not: day_event"
                                         ><td tal:condition="python:is_today"
                                              class="todaynoevent"><strong

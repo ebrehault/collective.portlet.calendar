@@ -1,31 +1,30 @@
 # -*- coding:utf-8 -*-
+
 from zope import schema
 from StringIO import StringIO
 from plone.portlets.interfaces import IPortletDataProvider
 from zope.formlib import form
-from plone.memoize import ram
+from plone.memoize import ram, instance
 from plone.memoize.compress import xhtml_compress
 
-from zope.i18nmessageid import MessageFactory
 from zope.interface import implements
 from zope.component import getMultiAdapter
 
 from Acquisition import aq_inner
 from DateTime import DateTime
 from Products.CMFCore.utils import getToolByName
+from Products.ATContentTypes.interface import IATTopic
 
 from plone.app.form.widgets.uberselectionwidget import UberSelectionWidget
 from plone.app.vocabularies.catalog import SearchableTextSourceBinder
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 
-from plone.app.portlets import PloneMessageFactory as _
+from collective.portlet.calendar import MessageFactory as _
 from plone.app.portlets import cache
 from plone.app.portlets.portlets import base as base_portlet
 from plone.app.portlets.portlets import calendar as base
 
-
-PLMF = MessageFactory('plonelocales')
-
+from ZTUtils import make_query
 
 def _render_cachekey(fun, self):
     context = aq_inner(self.context)
@@ -57,12 +56,29 @@ def _render_cachekey(fun, self):
 
         catalog = getToolByName(context, 'portal_catalog')
         path = navigation_root_path
-        brains = catalog(
-            portal_type=self.calendar.getCalendarTypes(),
-            review_state=self.calendar.getCalendarStates(),
-            start={'query': end, 'range': 'max'},
-            end={'query': start, 'range': 'min'},
-            path=path)
+        review_state = self.data.review_state or self.calendar.getCalendarStates()
+
+        options = {}
+        if navigation_root_path:
+            root_content = self.context.restrictedTraverse(navigation_root_path)
+            if IATTopic.providedBy(root_content):
+                options = root_content.buildQuery()
+
+        if options:
+            # Topic
+            options['start'] = {'query': end, 'range': 'max'}
+            options['end'] = {'query': start, 'range': 'min'}
+            if not options.get('review_state'):
+                options['review_state'] = ''
+            brains = catalog(**options)
+        else:
+            # Folder or site root
+            brains = catalog(
+                portal_type=self.calendar.getCalendarTypes(),
+                start={'query': end, 'range': 'max'},
+                end={'query': start, 'range': 'min'},
+                review_state=review_state,
+                path=path)
 
         for brain in brains:
             add(brain)
@@ -77,7 +93,7 @@ class ICalendarExPortlet(IPortletDataProvider):
         title=_(u"label_calendarex_title", default=u"Title"),
         description=_(u"help_calendarex_title",
                       default=u"The title of this portlet. Leave blank to "
-                      "do not display portlet title."),
+                               "do not display portlet title."),
         default=u"",
         required=False)
     
@@ -86,13 +102,30 @@ class ICalendarExPortlet(IPortletDataProvider):
             description=_(u'help_calendarex_root',
                           default=u"You may search for and choose a folder "
                                     "to act as the root of search for this "
-                                    " portlet. "
-                                    "Leave blank to use the Plone site root."),
+                                    "portlet. "
+                                    "Leave blank to use the Plone site root. "
+                                    "You can also select a Collection for "
+                                    "get only Events found by it."),
             required=False,
             source=SearchableTextSourceBinder({'is_folderish': True},
                                               default_query='path:'))
+
+    review_state = schema.Tuple(
+         title=_(u"Review state"),
+         description=_('help_review_state',
+                       default=u"Filter contents using the review state. "
+                                "Leave blank to use the site default. "
+                                "This filter will be ignored if you select a "
+                                "collection as \"Root node\""),
+         default=(),
+         value_type=schema.Choice(vocabulary='plone.app.vocabularies.WorkflowStates'),
+         required=False)
+
     kw = schema.Tuple(title=_(u"Keywords"),
-                     description=_(u"Keywords to be search for."),
+                     description=_('help_keywords',
+                                   default=u"Keywords to be search for. "
+                                            "This filter will be ignored if you select a "
+                                            "collection as \"Root node\""),
                      default=(),
                      value_type=schema.TextLine()
                      )
@@ -103,12 +136,14 @@ class Assignment(base.Assignment):
     title = _(u'Calendar Extended')
     name = u''
     root = None
+    review_state = ()
     kw = []
     
-    def __init__(self, name='' ,root=None,kw=[]):
+    def __init__(self, name='' ,root=None, review_state=(), kw=[]):
         self.title = name or _(u'Calendar Extended')
         self.name = name
         self.root = root
+        self.review_state = review_state
         self.kw = kw
     
 class Renderer(base.Renderer):
@@ -121,6 +156,17 @@ class Renderer(base.Renderer):
     @ram.cache(_render_cachekey)
     def render(self):
         return xhtml_compress(self._template())
+    
+    @instance.memoize
+    def rootTopic(self):
+        topic = self.context.restrictedTraverse(self.root())
+        if IATTopic.providedBy(topic):
+            return topic
+        return None
+    
+    def topicQueryString(self):
+        topic = self.rootTopic()
+        return make_query(topic.buildQuery())
     
     def hasName(self):
         ''' Show title only if user informed a title in the Assignment form
@@ -137,7 +183,7 @@ class Renderer(base.Renderer):
         portal_state = getMultiAdapter((self.context, self.request),
                                         name=u'plone_portal_state')
         if self.data.root:
-            navigation_root_path = '%s/%s' % (portal_state.navigation_root_path(),self.data.root)
+            navigation_root_path = '%s%s' % (portal_state.navigation_root_path(), self.data.root)
         else:
             navigation_root_path = portal_state.navigation_root_path()
         return navigation_root_path
@@ -147,11 +193,24 @@ class Renderer(base.Renderer):
         year = self.year
         month = self.month
         navigation_root_path = self.root()
-        kw = self.data.kw
+        
         options = {}
-        options['path'] = navigation_root_path
-        if kw:
-            options['Subject'] = kw
+        if navigation_root_path:
+            root_content = self.rootTopic()
+            if root_content:
+                options = root_content.buildQuery()
+        
+        if not options:
+            # Folder, or site root
+            options['path'] = navigation_root_path
+            if self.data.kw:
+                options['Subject'] = self.data.kw
+            if self.data.review_state:
+                options['review_state'] = self.data.review_state
+        elif options and not options.get('review_state'):
+            # if using a Topic, we need to override the calendar default behaviour with review state
+            options['review_state'] = ''
+
         weeks = self.calendar.getEventsForCalendar(month, year, **options)
         for week in weeks:
             for day in week:
@@ -168,6 +227,9 @@ class Renderer(base.Renderer):
         
         return weeks
 
+    def getReviewStateString(self):
+        states = self.data.review_state or self.calendar.getCalendarStates()
+        return ''.join(map(lambda x : 'review_state=%s&amp;' % self.url_quote_plus(x), states))
 
 class AddForm(base_portlet.AddForm):
     form_fields = form.Fields(ICalendarExPortlet)
@@ -176,9 +238,7 @@ class AddForm(base_portlet.AddForm):
     description = _(u"This calendar portlet allows choosing a subpath.")
 
     def create(self, data):
-        return Assignment(name=data.get('name', u""),
-                          root=data.get('root', u""),
-                          kw=data.get('kw', u""))
+        return Assignment(**data)
 
 
 class EditForm(base_portlet.EditForm):

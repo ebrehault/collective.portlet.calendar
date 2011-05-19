@@ -4,8 +4,24 @@ Changelog
 0.6 (unreleased)
 ----------------
 
-- Nothing changed yet.
+* Now also Plone 3.3 compatible 
+  [keul]
 
+* Change the translation domain, fixing all the i18ndude stuff 
+  (that were not working), because while using the "plone" ones was not possible
+  to translate anything.
+  [keul]
+
+* Selecting a collection, all other filters are ignored 
+  (if you want a review_state or Subject filter, put it in the collection 
+  itself).
+  [keul]
+
+* added and fixed tests
+  [keul]
+
+* Minimal pyflakes changes
+  [keul]
 
 0.5 (2011-05-06)
 ----------------

@@ -1,0 +1,70 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2011-05-18 10:39+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+"Language-Code: it\n"
+"Language-Name: Italian\n"
+"Preferred-Encodings: utf-8 latin1\n"
+"Domain: collective.portlet.calendar\n"
+
+#: ../calendar.py:220
+msgid "Add Calendar Extended Portlet"
+msgstr "Aggiungi portlet Calendario Avanzato"
+
+#: ../calendar.py:133
+msgid "Calendar Extended"
+msgstr "Calendario Avanzato"
+
+#: ../calendar.py:230
+msgid "Edit Calendar Extended Portlet"
+msgstr "Modifica portlet Calendario Avanzato"
+
+#: ../calendar.py:121
+msgid "Keywords"
+msgstr "Parole chiave"
+
+#: ../calendar.py:111
+msgid "Review state"
+msgstr "Stato del contenuto"
+
+#: ../calendar.py:221
+msgid "This calendar portlet allows choosing a subpath."
+msgstr "Questa portlet calendario permette di scegliere un percorso"
+
+#. Default: "You may search for and choose a folder to act as the root of search for this portlet. Leave blank to use the Plone site root. You can also select a Collection for get only Events found by it."
+#: ../calendar.py:99
+msgid "help_calendarex_root"
+msgstr "Puoi ricercare e scegliere una cartella che agisca da radice della ricerca per questo portlet. Lascia vuoto per usare la radice del sito. Puoi anche selezionare una Collezione per mostrare gli Eventi trovati da questa."
+
+#. Default: "The title of this portlet. Leave blank to do not display portlet title."
+#: ../calendar.py:91
+msgid "help_calendarex_title"
+msgstr "Il titolo di questa portlet. Lascia vuoto per non mostrare nessun titolo."
+
+#. Default: "Keywords to be search for. This filter will be ignored if you select a collection as \"Root node\""
+#: ../calendar.py:122
+msgid "help_keywords"
+msgstr "Parole chiave da cercare. Verrà ignorato se hai selezionato una collezione come \"Nodo radice\""
+
+#. Default: "Filter contents using the review state. Leave blank to use the site default. This filter will be ignored if you select a collection as \"Root node\""
+#: ../calendar.py:112
+msgid "help_review_state"
+msgstr "Filtra i contenuti usando lo stato di revisione. Lascia vuoto per usare il default del sito. Questo filtro verrà ignorato se hai selezionato una collezione come \"Nodo radice\""
+
+#. Default: "Root node"
+#: ../calendar.py:98
+msgid "label_calendarex_root_path"
+msgstr "Nodo radice"
+
+#. Default: "Title"
+#: ../calendar.py:90
+msgid "label_calendarex_title"
+msgstr "Titolo"
+
