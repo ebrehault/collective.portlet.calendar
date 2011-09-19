@@ -4,22 +4,25 @@ Changelog
 0.6 (unreleased)
 ----------------
 
+* Added Basque translation
+  [shagi]
+
 * Added Italian translation
   [keul]
 
 * Added Brazilian Portuguese translation
   [erico_andrei]
 
-* Now also Plone 3.3 compatible 
+* Now also Plone 3.3 compatible
   [keul]
 
-* Change the translation domain, fixing all the i18ndude stuff 
-  (that were not working), because while using the "plone" ones was not possible
-  to translate anything.
+* Change the translation domain, fixing all the i18ndude stuff (that were not
+  working), because while using the "plone" ones was not possible to translate
+  anything.
   [keul]
 
-* Selecting a collection, all other filters are ignored 
-  (if you want a review_state or Subject filter, put it in the collection 
+* Selecting a collection, all other filters are ignored
+  (if you want a review_state or Subject filter, put it in the collection
   itself).
   [keul]
 
@@ -35,10 +38,10 @@ Changelog
 * Providing a base css to our portlet
   [erico_andrei]
 
-* Allows restricting the results to only a subset of the site 
+* Allows restricting the results to only a subset of the site
   [erico_andrei]
 
-* Adding portlet name/title 
+* Adding portlet name/title
   [erico_andrei]
 
 * Initial release
