@@ -1,0 +1,10 @@
+Contributors
+------------
+
+- Érico Andrei
+- Luca Fabbri
+- Ales Zabal
+- Héctor Velarde
+
+Development sponsored by Simples Consultoria.
+
