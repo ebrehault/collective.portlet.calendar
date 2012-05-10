@@ -21,6 +21,6 @@ calendar per page, Extended Calendar Portlet comes to rescue.
 Screenshot
 ----------
 
-.. image:: screenshot.png
+.. image:: https://github.com/collective/collective.portlet.calendar/raw/master/screenshot.png
     :align: center
-
+    :scale: 50%
