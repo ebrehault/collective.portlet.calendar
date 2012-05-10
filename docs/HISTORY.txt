@@ -4,6 +4,12 @@ Changelog
 1.0b2 (unreleased)
 ^^^^^^^^^^^^^^^^^^
 
+- Added basic installation tests. [hvelarde]
+
+
+1.0b1 (2012-05-10)
+^^^^^^^^^^^^^^^^^^
+
 - Tested Plone 4.2 compatibility. [hvelarde]
 
 - Updated package information and development buildout configurations.
