@@ -6,5 +6,7 @@ Contributors
 - Ales Zabal
 - Héctor Velarde
 
-Development sponsored by Simples Consultoria.
+Development of this product was sponsored by `TRT13`_.
+
+.. _`TRT13`: http://www.xmlvalidation.com/
 
