@@ -1,6 +1,5 @@
+<?xml version="1.0"?>
 <layers>
- <layer
-     name="CalendarEx"
-     interface="collective.portlet.calendar.browser.interfaces.ICalendarExLayer"
-     />
+ <layer name="CalendarEx"
+    interface="collective.portlet.calendar.browser.interfaces.ICalendarExLayer" />
 </layers>
