@@ -1,8 +1,8 @@
 Changelog
 ---------
 
-0.6 (unreleased)
-^^^^^^^^^^^^^^^^^^^
+1.0b2 (unreleased)
+^^^^^^^^^^^^^^^^^^
 
 - Tested Plone 4.2 compatibility. [hvelarde]
 
@@ -10,6 +10,10 @@ Changelog
   [hvelarde]
 
 - Added Basque translation. [shagi]
+
+
+0.6 (2011-05-19)
+^^^^^^^^^^^^^^^^
 
 - Added Italian translation. [keul]
 
@@ -27,6 +31,7 @@ Changelog
 - Sdded and fixed tests. [keul]
 
 - Minimal pyflakes changes. [keul]
+
 
 0.5 (2011-05-06)
 ^^^^^^^^^^^^^^^^

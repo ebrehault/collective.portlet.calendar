@@ -3,7 +3,7 @@
 import os
 from setuptools import setup, find_packages
 
-version = '0.6dev'
+version = '1.0b2dev'
 long_description = open("README.txt").read() + "\n" + \
                    open(os.path.join("docs", "INSTALL.txt")).read() + "\n" + \
                    open(os.path.join("docs", "CREDITS.txt")).read() + "\n" + \
