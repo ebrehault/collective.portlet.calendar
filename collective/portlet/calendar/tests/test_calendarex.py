@@ -1,5 +1,9 @@
+import unittest2 as unittest
+
 from zope.component import getUtility, getMultiAdapter
-from zope.site.hooks import setHooks, setSite
+
+from plone.app.testing import TEST_USER_ID
+from plone.app.testing import setRoles
 
 from Products.GenericSetup.utils import _getDottedName
 
@@ -11,14 +15,17 @@ from plone.portlets.interfaces import IPortletRenderer
 
 from DateTime import DateTime
 from collective.portlet.calendar import calendar
-from plone.app.portlets.tests.base import PortletsTestCase
 
-class TestPortlet(PortletsTestCase):
+from collective.portlet.calendar.testing import INTEGRATION_TESTING
 
-    def afterSetUp(self):
-        setHooks()
-        setSite(self.portal)
-        self.setRoles(('Manager',))
+
+class TestPortletTry(unittest.TestCase):
+
+    layer = INTEGRATION_TESTING
+
+    def setUp(self):
+        self.portal = self.layer['portal']
+        setRoles(self.portal, TEST_USER_ID, ['Manager'])
 
     def testPortletTypeRegistered(self):
         portlet = getUtility(IPortletType, name='portlets.CalendarEx')
@@ -39,131 +46,145 @@ class TestPortlet(PortletsTestCase):
 
     def testInvokeAddview(self):
         portlet = getUtility(IPortletType, name='portlets.CalendarEx')
-        mapping = self.portal.restrictedTraverse('++contextportlets++plone.leftcolumn')
+        mapping = self.portal.restrictedTraverse(
+                                '++contextportlets++plone.leftcolumn')
         for m in mapping.keys():
             del mapping[m]
         addview = mapping.restrictedTraverse('+/' + portlet.addview)
-        
-        addview.createAndAdd(data={'name':'My Calendar',
-                                   'root':u''})
 
+        addview.createAndAdd(data={'name': 'My Calendar',
+                                   'root': u''})
         self.assertEquals(len(mapping), 1)
-        self.failUnless(isinstance(mapping.values()[0], calendar.Assignment))
+        self.assertTrue(isinstance(mapping.values()[0], calendar.Assignment))
 
     def testPortletProperties(self):
         portlet = getUtility(IPortletType, name='portlets.CalendarEx')
-        mapping = self.portal.restrictedTraverse('++contextportlets++plone.leftcolumn')
+        mapping = self.portal.restrictedTraverse(
+                                '++contextportlets++plone.leftcolumn')
         for m in mapping.keys():
             del mapping[m]
         addview = mapping.restrictedTraverse('+/' + portlet.addview)
-        addview.createAndAdd(data={'name':'My Calendar',
-                                   'root':u''})
+        addview.createAndAdd(data={'name': 'My Calendar',
+                                   'root': u''})
         title = mapping.values()[0].title
         root = mapping.values()[0].root
-        self.assertEqual(title,'My Calendar')
+        self.assertEqual(title, 'My Calendar')
         self.assertEqual(root, u'')
-        
 
     def testRenderer(self):
-        context = self.folder
-        request = self.folder.REQUEST
-        view = self.folder.restrictedTraverse('@@plone')
-        manager = getUtility(IPortletManager, name='plone.rightcolumn', context=self.portal)
+        context = self.portal
+        request = self.portal.REQUEST
+        view = self.portal.restrictedTraverse('@@plone')
+        manager = getUtility(IPortletManager, name='plone.rightcolumn',
+                             context=self.portal)
         assignment = calendar.Assignment()
 
-        renderer = getMultiAdapter((context, request, view, manager, assignment), IPortletRenderer)
-        self.failUnless(isinstance(renderer, calendar.Renderer))
+        renderer = getMultiAdapter((context, request, view,
+                                    manager, assignment), IPortletRenderer)
+        self.assertTrue(isinstance(renderer, calendar.Renderer))
 
 
-class TestRenderer(PortletsTestCase):
+class TestRendererTry(unittest.TestCase):
 
-    def afterSetUp(self):
-        setHooks()
-        setSite(self.portal)
+    layer = INTEGRATION_TESTING
+
+    def setUp(self):
+        self.portal = self.layer['portal']
+        setRoles(self.portal, TEST_USER_ID, ['Manager'])
         self.portal_path = '/'.join(self.portal.getPhysicalPath())
+        self.portal.portal_workflow.setChainForPortalTypes(
+            ['Folder', 'Event'], ['simple_publication_workflow'])
 
-    def renderer(self, context=None, request=None, view=None, manager=None, assignment=None):
-        context = context or self.folder
-        request = request or self.folder.REQUEST
-        view = view or self.folder.restrictedTraverse('@@plone')
-        manager = manager or getUtility(IPortletManager, name='plone.rightcolumn', context=self.portal)
+    def renderer(self, context=None, request=None, view=None,
+        manager=None, assignment=None):
+        context = context or self.portal
+        request = request or self.portal.REQUEST
+        view = view or self.portal.restrictedTraverse('@@plone')
+        manager = manager or getUtility(IPortletManager,
+                                        name='plone.rightcolumn',
+                                        context=self.portal)
         assignment = assignment or calendar.Assignment()
 
-        return getMultiAdapter((context, request, view, manager, assignment), IPortletRenderer)
-    
-    def countEventsInPortlet(self,dates):
+        return getMultiAdapter((context, request, view,
+                                manager, assignment), IPortletRenderer)
+
+    def countEventsInPortlet(self, dates):
         weeks = [w for w in dates]
         days = []
         for week in weeks:
             for day in week:
                 days.append(day)
-        eventsbyday = [len(d['eventslist']) for d in days if d['day']>0]
+        eventsbyday = [len(d['eventslist']) for d in days if d['day'] > 0]
         return sum(eventsbyday)
-    
+
     def createEvents(self):
-        p = self.portal
-        self.setRoles(('Manager',))
         # Create subfolders
-        p.invokeFactory('Folder', 'folder1',)
-        p.portal_workflow.doActionFor(p.folder1, 'publish')
-        p.invokeFactory('Folder', 'folder2',)
-        p.portal_workflow.doActionFor(p.folder2, 'publish')
-        
+        self.portal.invokeFactory('Folder', 'folder1',)
+        self.portal.portal_workflow.doActionFor(
+                                    self.portal['folder1'], 'publish')
+        self.portal.invokeFactory('Folder', 'folder2',)
+        self.portal.portal_workflow.doActionFor(
+                                    self.portal['folder2'], 'publish')
+
         # We will add 3 events. On the root folder and on each subfolder
         # Root event
-        start,end = self.genDates(delta=0)
-        p.invokeFactory('Event','e1', startDate=start, endDate=end)
-        o = p['e1']
-        o.setSubject(['Meeting',])
-        o.reindexObject()
-        p.portal_workflow.doActionFor(p.e1,'publish')
-        
-        # Folder1 event
-        start,end = self.genDates(delta=1)
-        p.folder1.invokeFactory('Event','e2', startDate=start, endDate=end)
-        o = p.folder1['e2']
-        o.setSubject(['Meeting',])
-        o.reindexObject()
-        p.portal_workflow.doActionFor(p.folder1.e2,'publish')
-        
-        # Folder2 event
-        start,end = self.genDates(delta=2)
-        p.folder2.invokeFactory('Event','e3', startDate=start, endDate=end)
-        o = p.folder2['e3']
-        o.setSubject(['Party','OpenBar',])
-        o.reindexObject()
-        p.portal_workflow.doActionFor(p.folder2.e3,'publish')
-    
-    def createTopicEvents(self):
-        p = self.portal
-        self.setRoles(('Manager',))
-        # Create subfolders
-        p.invokeFactory('Folder', 'folder1',)
-        folder1 = p['folder1']
-        p.portal_workflow.doActionFor(folder1,'publish')
         start, end = self.genDates(delta=0)
-        folder1.invokeFactory('Event','e1', startDate=start, endDate=end)
+        self.portal.invokeFactory('Event', 'e1', startDate=start, endDate=end)
+        o = self.portal['e1']
+        o.setSubject(['Meeting', ])
+        o.reindexObject()
+        self.portal.portal_workflow.doActionFor(self.portal.e1, 'publish')
+
+        # Folder1 event
+        start, end = self.genDates(delta=1)
+        self.portal.folder1.invokeFactory(
+                                'Event', 'e2', startDate=start, endDate=end)
+        o = self.portal.folder1['e2']
+        o.setSubject(['Meeting', ])
+        o.reindexObject()
+        self.portal.portal_workflow.doActionFor(
+                                        self.portal.folder1.e2, 'publish')
+
+        # Folder2 event
         start, end = self.genDates(delta=2)
-        p.portal_workflow.doActionFor(folder1.e1, 'publish')
-        folder1.invokeFactory('Event','e2', startDate=start, endDate=end)
-    
+        self.portal.folder2.invokeFactory(
+                            'Event', 'e3', startDate=start, endDate=end)
+        o = self.portal.folder2['e3']
+        o.setSubject(['Party', 'OpenBar', ])
+        o.reindexObject()
+        self.portal.portal_workflow.doActionFor(
+                                        self.portal.folder2.e3, 'publish')
+
+    def createTopicEvents(self):
+        # Create subfolders
+        self.portal.invokeFactory('Folder', 'folder1',)
+        folder1 = self.portal['folder1']
+        self.portal.portal_workflow.doActionFor(folder1, 'publish')
+
+        start, end = self.genDates(delta=0)
+        folder1.invokeFactory('Event', 'e1', startDate=start, endDate=end)
+        folder1.e1.reindexObject()
+        self.portal.portal_workflow.doActionFor(folder1.e1, 'publish')
+
+        start, end = self.genDates(delta=2)
+        folder1.invokeFactory('Event', 'e2', startDate=start, endDate=end)
+        folder1.e2.reindexObject()
+
     def createTopic(self):
-        p = self.portal
-        self.setRoles(('Manager',))
-        p.invokeFactory('Topic', 'example-events',)
-        topic = p['example-events']
-        type_crit = topic.addCriterion('Type','ATPortalTypeCriterion')
+        self.portal.invokeFactory('Topic', 'example-events',)
+        topic = self.portal['example-events']
+        type_crit = topic.addCriterion('Type', 'ATPortalTypeCriterion')
         type_crit.setValue(['Event'])
-    
-    def genDates(self,delta):
+
+    def genDates(self, delta):
         now = DateTime()
-        year, month = now.year(),now.month()
+        year, month = now.year(), now.month()
         date = DateTime('%s/%s/1' % (year, month))
         hour = 1 / 24.0
-        start = date + delta + 23*hour
-        end = date + delta + 23.5*hour
-        return (start,end)
-    
+        start = date + delta + 23 * hour
+        end = date + delta + 23.5 * hour
+        return (start, end)
+
     def test_event_created_last_day_of_month_invalidate_cache(self):
         # First render the calendar portlet when there's no events
         r = self.renderer(assignment=calendar.Assignment())
@@ -174,9 +195,8 @@ class TestRenderer(PortletsTestCase):
         year, month = r.getNextMonth(year, month)
         last_day_month = DateTime('%s/%s/1' % (year, month)) - 1
         hour = 1 / 24.0
-        start = last_day_month + 23*hour
-        end = last_day_month + 23.5*hour
-        self.setRoles(('Manager',))
+        start = last_day_month + 23 * hour
+        end = last_day_month + 23.5 * hour
         # Event starts at 23:00 and ends at 23:30
         self.portal.invokeFactory('Event', 'e1', startDate=start, endDate=end)
 
@@ -195,36 +215,45 @@ class TestRenderer(PortletsTestCase):
         r = self.renderer(assignment=calendar.Assignment())
         r.update()
         self.assertEqual(r.root(), path)
-        self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),3)
-        
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 3)
+
         # Render a portlet with a root assignment to folder1
         path = '/folder1'
         r = self.renderer(assignment=calendar.Assignment(root=path))
         r.update()
         self.assertEqual(r.root(), '%s%s' % (self.portal_path, path))
-        self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),1)
-        
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 1)
+
         # Render a portlet with a root assignment to folder2
         path = '/folder2'
         r = self.renderer(assignment=calendar.Assignment(root=path))
         r.update()
         self.assertEqual(r.root(), '%s%s' % (self.portal_path, path))
-        self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),1)
-        
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 1)
+
     def testEventsCollectionSearch(self):
         # Create the events
         self.createTopicEvents()
         # Create the collection
         self.createTopic()
         path = '/example-events'
-        r = self.renderer(assignment=calendar.Assignment(root=path, kw=['Foo',]))
+        r = self.renderer(assignment=calendar.Assignment(root=path,
+                          kw=['Foo', ]))
         r.update()
+
         # kw are ignored and also content type, so all events are displayed
-        self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()), 2)
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 2)
         # adding a new criteria to the collection change results
-        state_crit = self.portal['example-events'].addCriterion('review_state', 'ATListCriterion')
-        state_crit.setValue(['private',])
-        self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()), 1)
+        state_crit = self.portal['example-events'].addCriterion(
+                                                            'review_state',
+                                                            'ATListCriterion')
+        state_crit.setValue(['private', ])
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 1)
 
     def testEventsKwSearch(self):
         # Create the events
@@ -234,32 +263,28 @@ class TestRenderer(PortletsTestCase):
         r = self.renderer(assignment=calendar.Assignment())
         r.update()
         self.assertEqual(r.root(), path)
-        self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),3)
-        
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 3)
+
         # Render a portlet showing only Meetings
-        kw = ['Meeting',]
+        kw = ['Meeting', ]
         r = self.renderer(assignment=calendar.Assignment(kw=kw))
         r.update()
-        self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),2)
-        
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 2)
+
         # Render a portlet showing only Parties
-        kw = ['Party',]
+        kw = ['Party', ]
         r = self.renderer(assignment=calendar.Assignment(kw=kw))
         r.update()
-        self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),1)
-        
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 1)
+
         # Render a portlet showing Meetings under folder1
-        kw = ['Meeting',]
+        kw = ['Meeting', ]
         path = '/folder1'
         r = self.renderer(assignment=calendar.Assignment(root=path, kw=kw))
         r.update()
-        self.assertEqual(self.countEventsInPortlet(r.getEventsForCalendar()),1)
-        self.assertEqual(r.root(),'%s%s' % (self.portal_path, path))
-    
-
-def test_suite():
-    from unittest import TestSuite, makeSuite
-    suite = TestSuite()
-    suite.addTest(makeSuite(TestPortlet))
-    suite.addTest(makeSuite(TestRenderer))
-    return suite
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 1)
+        self.assertEqual(r.root(), '%s%s' % (self.portal_path, path))
