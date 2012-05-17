@@ -19,7 +19,7 @@ from collective.portlet.calendar import calendar
 from collective.portlet.calendar.testing import INTEGRATION_TESTING
 
 
-class TestPortletTry(unittest.TestCase):
+class TestPortlet(unittest.TestCase):
 
     layer = INTEGRATION_TESTING
 
@@ -84,7 +84,7 @@ class TestPortletTry(unittest.TestCase):
         self.assertTrue(isinstance(renderer, calendar.Renderer))
 
 
-class TestRendererTry(unittest.TestCase):
+class TestRenderer(unittest.TestCase):
 
     layer = INTEGRATION_TESTING
 
@@ -187,6 +187,7 @@ class TestRendererTry(unittest.TestCase):
 
     def test_event_created_last_day_of_month_invalidate_cache(self):
         # First render the calendar portlet when there's no events
+        self.portal.REQUEST["ACTUAL_URL"] = self.portal.REQUEST["SERVER_URL"]
         r = self.renderer(assignment=calendar.Assignment())
         html = r.render()
 
