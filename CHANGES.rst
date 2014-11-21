@@ -5,7 +5,7 @@ Changelog
 ^^^^^^^^^^^^^^^^^^
 
 - Remove also browserlayer when running unistall profile. [keul]
-
+- Uninstall profiles was not run on uninstall [keul]
 
 1.0b2 (2012-05-10)
 ^^^^^^^^^^^^^^^^^^
