@@ -4,14 +4,6 @@ import logging
 from Products.CMFCore.utils import getToolByName
 from Products.GenericSetup.upgrade import listUpgradeSteps
 
-try:
-    # Do we really need CacheFu stuff here? Is this still working on Plone 3.3?
-    from Products.CacheSetup import interfaces
-    from Products.CacheSetup.enabler import enableCacheFu
-    CACHEFU = True
-except ImportError:
-    CACHEFU = False
-
 _PROJECT = 'collective.portlet.calendar'
 _PROFILE_ID = 'collective.portlet.calendar:default'
 
@@ -24,16 +16,10 @@ def doUpgrades(context):
     logger = logging.getLogger(_PROJECT)
     site = context.getSite()
     setup_tool = getToolByName(site,'portal_setup')
-    cache = CACHEFU and getToolByName(context,'portal_cache_settings',None)
     version = setup_tool.getLastVersionForProfile(_PROFILE_ID)
     upgradeSteps = listUpgradeSteps(setup_tool,_PROFILE_ID, version)
     sorted(upgradeSteps,key=lambda step:step['sortkey'])
-    
-    if cache:
-        # Desabilitamos o cache fu para nao termos uma enxurrada
-        # de purges
-        cache.setEnabled(False)
-        
+
     for step in upgradeSteps:
         oStep = step.get('step')
         if oStep is not None:
