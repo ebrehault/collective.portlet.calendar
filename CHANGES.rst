@@ -6,6 +6,7 @@ Changelog
 
 - Remove also browserlayer when running unistall profile. [keul]
 - Uninstall profiles was not run on uninstall [keul]
+- Removed useless paster geenrated code (there's no Archetypes contents there) [keul]
 
 1.0b2 (2012-05-10)
 ^^^^^^^^^^^^^^^^^^
