@@ -4,7 +4,7 @@ Changelog
 1.0b3 (unreleased)
 ^^^^^^^^^^^^^^^^^^
 
-- Nothing changed yet.
+- Remove also browserlayer when running unistall profile. [keul]
 
 
 1.0b2 (2012-05-10)
