@@ -40,7 +40,7 @@ Changelog
 - Selecting a collection, all other filters are ignored (if you want a
   review_state or Subject filter, put it in the collection itself). [keul]
 
-- Sdded and fixed tests. [keul]
+- Added and fixed tests. [keul]
 
 - Minimal pyflakes changes. [keul]
 
