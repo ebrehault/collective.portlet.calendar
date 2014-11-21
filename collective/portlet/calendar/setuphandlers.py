@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
-from zope import component
+
 import logging
 from Products.CMFCore.utils import getToolByName
-from Products.GenericSetup import interfaces as gsinterfaces
 from Products.GenericSetup.upgrade import listUpgradeSteps
 
-from Products.ZCatalog.ProgressHandler import ZLogHandler
-
 try:
+    # Do we really need CacheFu stuff here? Is this still working on Plone 3.3?
     from Products.CacheSetup import interfaces
     from Products.CacheSetup.enabler import enableCacheFu
     CACHEFU = True

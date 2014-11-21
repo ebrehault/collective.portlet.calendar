@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-from zope import component
-import logging
-from Products.CMFCore.utils import getToolByName
-from Products.GenericSetup import interfaces as gsinterfaces
-from Products.GenericSetup.upgrade import listUpgradeSteps
 
-from Products.ZCatalog.ProgressHandler import ZLogHandler
+from Products.CMFCore.utils import getToolByName
+
+# BBB: this seem's doin nothing
+
 
 def upgrade0to1(context):
     ''' Upgrade to version 1.0
