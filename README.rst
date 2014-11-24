@@ -9,9 +9,13 @@ Life, the Universe, and Everything
 
 This package provides a configurable implementation of a Calendar Portlet.
 
-It is possible to give the calendar portlet a header, to search only for
-events with given keywords and constrain its results to only an area of your
-site.
+It is possible to give the calendar portlet a header, to search only for events 
+with given **keywords**, a set of **review states** and constrain its results
+to only an area of your site, selecting a root folder.
+
+If filters given by portlet's configuration panel are not enough, you can
+select a **collection** instead of a folder, and all given criteria will be
+used to filter yours events.
 
 Even though Plone's default Calendar Portlet implementation is useful for most
 sites if you want to segment calendar's events or to provide more than one
