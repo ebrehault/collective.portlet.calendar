@@ -18,6 +18,7 @@ Changelog
   Plone calendar. [keul]
 - Fixed portlet cache key. It was not looking for additional paramenters.
   [keul]
+- Calendar portlet title in management screen were stored forever. [keul]
 
 1.0b2 (2012-05-10)
 ^^^^^^^^^^^^^^^^^^

@@ -25,7 +25,6 @@ from zope.formlib import form
 from zope.interface import implements
 
 
-
 def _render_cachekey(fun, self):
     context = aq_inner(self.context)
     if not self.updated:
@@ -145,19 +144,22 @@ class ICalendarExPortlet(IPortletDataProvider):
 class Assignment(base.Assignment):
     implements(ICalendarExPortlet)
 
-    title = _(u'Calendar Extended')
     name = u''
     root = None
     review_state = ()
     kw = []
 
     def __init__(self, name='', root=None, review_state=(), kw=[]):
-        self.title = name or _(u'Calendar Extended')
         self.name = name
         self.root = root
         self.review_state = review_state
         self.kw = kw
 
+    @property
+    def title(self):
+        return _('portlet_title',
+                 u'Calendar Extended: $name',
+                 mapping={'name': self.name or 'unnamed'})
 
 class Renderer(base.Renderer):
     _template = ViewPageTemplateFile('calendar.pt')
@@ -188,12 +190,11 @@ class Renderer(base.Renderer):
     def hasName(self):
         ''' Show title only if user informed a title in the Assignment form
         '''
-        name = self.name or ''
-        return bool(name.strip())
+        return bool(self.name.strip())
 
     @property
     def name(self):
-        return self.data.name
+        return self.data.name or ''
 
     def root(self):
         portal_state = getMultiAdapter((self.context, self.request),

@@ -66,9 +66,9 @@ class TestPortlet(unittest.TestCase):
         addview = mapping.restrictedTraverse('+/' + portlet.addview)
         addview.createAndAdd(data={'name': 'My Calendar',
                                    'root': u''})
-        title = mapping.values()[0].title
+        name = mapping.values()[0].name
         root = mapping.values()[0].root
-        self.assertEqual(title, 'My Calendar')
+        self.assertEqual(name, 'My Calendar')
         self.assertEqual(root, u'')
 
     def testRenderer(self):
