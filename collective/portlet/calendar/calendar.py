@@ -180,9 +180,7 @@ class Renderer(base.Renderer):
     def hasName(self):
         ''' Show title only if user informed a title in the Assignment form
         '''
-        name = self.name
-        name.strip()
-        return name and True or False
+        return bool(self.name.strip())
 
     @property
     def name(self):

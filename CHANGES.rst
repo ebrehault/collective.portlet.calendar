@@ -6,9 +6,12 @@ Changelog
 
 - Remove also browserlayer when running unistall profile. [keul]
 - Uninstall profiles was not run on uninstall [keul]
-- Removed useless paster generated code (there's no Archetypes contents there). [keul]
+- Removed useless paster generated code (there's no Archetypes contents there).
+  [keul]
 - Support for new-style collections from plone.app.collection package.
   This **drop Plone 3.3 compatibility**. [keul]
+- Removed kss attributes and added modern HTML 5 ones. This make the
+  calendar JavaScript works on Plone 4.3. [keul]
 
 1.0b2 (2012-05-10)
 ^^^^^^^^^^^^^^^^^^
