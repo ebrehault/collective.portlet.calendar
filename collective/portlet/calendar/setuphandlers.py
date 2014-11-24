@@ -28,9 +28,3 @@ def doUpgrades(context):
                                                           _PROFILE_ID)
             setup_tool.setLastVersionForProfile(_PROFILE_ID, oStep.dest)
             logger.info(msg)
-    
-    if cache:
-        # Novamente habilitamos o cache fu para nao termos uma enxurrada
-        # de purges
-        cache.setEnabled(True)
-    
