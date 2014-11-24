@@ -12,6 +12,7 @@ Changelog
   This **drop Plone 3.3 compatibility**. [keul]
 - Removed kss attributes and added modern HTML 5 ones. This make the
   calendar JavaScript works on Plone 4.3. [keul]
+- Links to search page are @@ prefixed. [keul]
 
 1.0b2 (2012-05-10)
 ^^^^^^^^^^^^^^^^^^
