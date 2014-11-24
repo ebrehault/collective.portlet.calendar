@@ -11,10 +11,43 @@
                 showNextMonth view/showNextMonth;
                 year view/year;">
 
-    <dt class="portletHeader"
-        tal:attributes="class python:view.hasName() and 'portletHeader' or 'portletHeader hiddenStructure'">
+    <dt class="portletHeader">
         <span class="portletTopLeft"></span>
-        <span tal:content="view/name">Navigation</span>
+		<tal:no-title condition="not:view/hasName">
+	        <a href="#" rel="nofollow"
+	           title="Previous month"
+	           class="calendarPrev"
+	           tal:define="prevMonthMonth view/prevMonthMonth;
+	                       prevMonthYear view/prevMonthYear"
+	           tal:attributes="id python:showPrevMonth and 'calendar-previous' or '';
+	                           href python:'?%smonth:int=%d&amp;year:int=%d&amp;orig_query=%s' % (query_string, prevMonthMonth, prevMonthYear, url_quote_plus(query_string));
+	                           data-year prevMonthYear;
+	                           data-month prevMonthMonth;"
+	           tal:condition="showPrevMonth"
+	           i18n:attributes="title title_previous_month;">&laquo;</a>
+	        <span i18n:translate="" tal:omit-tag="">
+	            <span i18n:name="monthname" i18n:translate=""
+	                  tal:content="view/monthName"
+	                  tal:omit-tag="">monthname</span>
+	            <span i18n:name="year" i18n:translate=""
+	                  tal:content="year"
+	                  tal:omit-tag="">year</span>
+	        </span>
+	        <a href="#" rel="nofollow"
+	           title="Next month"
+	           class="calendarNext"
+	           tal:define="nextMonthMonth view/nextMonthMonth;
+	                       nextMonthYear view/nextMonthYear"
+	           tal:attributes="id python:showNextMonth and 'calendar-next' or '';
+	                           href python:'?%smonth:int=%d&amp;year:int=%d&amp;orig_query=%s' % (query_string, nextMonthMonth, nextMonthYear, url_quote_plus(query_string));
+	                           data-year nextMonthYear;
+	                           data-month nextMonthMonth;"
+	           tal:condition="showNextMonth"
+	           i18n:attributes="title title_next_month;">&raquo;</a>
+		</tal:no-title>
+		
+        <span tal:condition="view/hasName" tal:content="view/name">Navigation</span>
+
         <span class="portletTopRight"></span>
     </dt>
 
@@ -26,7 +59,7 @@
             <caption class="hiddenStructure"
                      tal:content="view/monthName">Month name</caption>
             <thead>
-                <tr class="month">
+                <tr class="month" tal:condition="view/hasName">
                     <th colspan="7">
                         <a href="#" rel="nofollow"
                            title="Previous month"

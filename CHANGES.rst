@@ -13,6 +13,11 @@ Changelog
 - Removed kss attributes and added modern HTML 5 ones. This make the
   calendar JavaScript works on Plone 4.3. [keul]
 - Links to search page are @@ prefixed. [keul]
+- Fixed issue when not providing a portlet name. [keul]
+- Fixed layout: when not providing a title, the portlet looks like default
+  Plone calendar. [keul]
+- Fixed portlet cache key. It was not looking for additional paramenters.
+  [keul]
 
 1.0b2 (2012-05-10)
 ^^^^^^^^^^^^^^^^^^

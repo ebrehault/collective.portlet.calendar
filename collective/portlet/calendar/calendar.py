@@ -38,6 +38,8 @@ def _render_cachekey(fun, self):
                                         name=u'plone_portal_state')
         key = StringIO()
         print >> key, self.data.kw
+        print >> key, self.data.review_state
+        print >> key, self.data.name
         print >> key, portal_state.navigation_root_url()
         print >> key, cache.get_language(context, self.request)
         print >> key, self.calendar.getFirstWeekDay()
@@ -66,6 +68,8 @@ def _render_cachekey(fun, self):
                     self.context.restrictedTraverse(navigation_root_path)
             if IATTopic.providedBy(root_content):
                 options = root_content.buildQuery()
+            elif ICollection.providedBy(root_content):
+                options = parseFormquery(root_content, root_content.getField('query').getRaw(root_content))
 
         if options:
             # Topic
@@ -174,13 +178,18 @@ class Renderer(base.Renderer):
         return None
 
     def topicQueryString(self):
+        # BBB: seems ununsed
         topic = self.rootTopic()
-        return make_query(topic.buildQuery())
+        if IATTopic.providedBy(topic):
+            return make_query(topic.buildQuery())
+        else:
+            raise NotImplementedError('No support for %s yet' % topic.portal_type)
 
     def hasName(self):
         ''' Show title only if user informed a title in the Assignment form
         '''
-        return bool(self.name.strip())
+        name = self.name or ''
+        return bool(name.strip())
 
     @property
     def name(self):
