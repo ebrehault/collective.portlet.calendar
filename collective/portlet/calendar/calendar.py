@@ -1,30 +1,29 @@
 # -*- coding:utf-8 -*-
 
-from zope import schema
-from StringIO import StringIO
-from plone.portlets.interfaces import IPortletDataProvider
-from zope.formlib import form
-from plone.memoize import ram, instance
-from plone.memoize.compress import xhtml_compress
-
-from zope.interface import implements
-from zope.component import getMultiAdapter
-
 from Acquisition import aq_inner
 from DateTime import DateTime
+from Products.ATContentTypes.interfaces import IATTopic
 from Products.CMFCore.utils import getToolByName
-from Products.ATContentTypes.interface import IATTopic
-
-from plone.app.form.widgets.uberselectionwidget import UberSelectionWidget
-from plone.app.vocabularies.catalog import SearchableTextSourceBinder
+from Products.CMFCore.interfaces import IFolderish
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
-
+from StringIO import StringIO
+from ZTUtils import make_query
 from collective.portlet.calendar import MessageFactory as _
+from plone.app.collection.interfaces import ICollection
+from plone.app.form.widgets.uberselectionwidget import UberSelectionWidget
+from plone.app.querystring.queryparser import parseFormquery
 from plone.app.portlets import cache
 from plone.app.portlets.portlets import base as base_portlet
 from plone.app.portlets.portlets import calendar as base
+from plone.app.vocabularies.catalog import SearchableTextSourceBinder
+from plone.memoize import ram, instance
+from plone.memoize.compress import xhtml_compress
+from plone.portlets.interfaces import IPortletDataProvider
+from zope import schema
+from zope.component import getMultiAdapter
+from zope.formlib import form
+from zope.interface import implements
 
-from ZTUtils import make_query
 
 
 def _render_cachekey(fun, self):
@@ -112,7 +111,9 @@ class ICalendarExPortlet(IPortletDataProvider):
                                     "You can also select a Collection for "
                                     "get only Events found by it."),
             required=False,
-            source=SearchableTextSourceBinder({'is_folderish': True},
+            source=SearchableTextSourceBinder({'object_provides': [IATTopic.__identifier__,
+                                                                   ICollection.__identifier__,
+                                                                   IFolderish.__identifier__]},
                                               default_query='path:'))
 
     review_state = schema.Tuple(
@@ -168,7 +169,7 @@ class Renderer(base.Renderer):
     @instance.memoize
     def rootTopic(self):
         topic = self.context.restrictedTraverse(self.root())
-        if IATTopic.providedBy(topic):
+        if IATTopic.providedBy(topic) or ICollection.providedBy(topic):
             return topic
         return None
 
@@ -206,7 +207,10 @@ class Renderer(base.Renderer):
         if navigation_root_path:
             root_content = self.rootTopic()
             if root_content:
-                options = root_content.buildQuery()
+                if IATTopic.providedBy(root_content):
+                    options = root_content.buildQuery()
+                elif ICollection.providedBy(root_content):
+                    options = parseFormquery(root_content, root_content.getField('query').getRaw(root_content))
 
         if not options:
             # Folder, or site root

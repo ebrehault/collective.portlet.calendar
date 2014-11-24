@@ -6,7 +6,9 @@ Changelog
 
 - Remove also browserlayer when running unistall profile. [keul]
 - Uninstall profiles was not run on uninstall [keul]
-- Removed useless paster geenrated code (there's no Archetypes contents there) [keul]
+- Removed useless paster generated code (there's no Archetypes contents there). [keul]
+- Support for new-style collections from plone.app.collection package.
+  This **drop Plone 3.3 compatibility**. [keul]
 
 1.0b2 (2012-05-10)
 ^^^^^^^^^^^^^^^^^^
