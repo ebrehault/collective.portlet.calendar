@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2011-05-19 14:56+0000\n"
+"POT-Creation-Date: 2014-11-24 11:32+0000\n"
 "PO-Revision-Date: 2011-08-27 08:44+0000\n"
 "Last-Translator: Ales Zabala Alava (Shagi) <shagi@gisa-elkartea.org>\n"
 "Language-Team: Basque\n"
@@ -17,56 +17,64 @@ msgstr ""
 "Domain: DOMAIN\n"
 "Language: eu\n"
 
-#: ../calendar.py:237
+msgid "A calendar portlet that supports configuration"
+msgstr ""
+
+#: ../calendar.py:257
 msgid "Add Calendar Extended Portlet"
 msgstr "Egutegi Hedatua portleta gehitu"
 
-#: ../calendar.py:136
-msgid "Calendar Extended"
-msgstr "Egutegi Hedatua"
-
-#: ../calendar.py:247
+#: ../calendar.py:267
 msgid "Edit Calendar Extended Portlet"
 msgstr "Egutegi Hedatua portleta editatu"
 
-#: ../calendar.py:124
+msgid "Extended Calendar Portlet"
+msgstr ""
+
+#: ../calendar.py:134
 msgid "Keywords"
 msgstr "Etiketak"
 
-#: ../calendar.py:114
+#: ../calendar.py:123
 msgid "Review state"
 msgstr "Egoera"
 
-#: ../calendar.py:238
+#: ../calendar.py:258
 msgid "This calendar portlet allows choosing a subpath."
 msgstr "Egutegi portlet honek kokapen bat aukeratzen uzten dizu."
 
 #. Default: "You may search for and choose a folder to act as the root of search for this portlet. Leave blank to use the Plone site root. You can also select a Collection for get only Events found by it."
-#: ../calendar.py:102
+#: ../calendar.py:109
 msgid "help_calendarex_root"
 msgstr "Nabigazio zuhaitzaren erroa izango den karpeta bat bilatu eta aukeratu dezakezu. Ez idatzi ezer Plone atariaren erroa erabiltzeko. Bilduma bat aukeratu dezakezu baita ere, berak topatutako gertakariak bakarrik erabiltzeko."
 
 #. Default: "The title of this portlet. Leave blank to do not display portlet title."
-#: ../calendar.py:94
+#: ../calendar.py:101
 msgid "help_calendarex_title"
 msgstr "Portlet honen izenburua. Ez idatzi ezer portlet honen izenbururik ez bistaratzeko."
 
 #. Default: "Keywords to be search for. This filter will be ignored if you select a collection as \"Root node\""
-#: ../calendar.py:125
+#: ../calendar.py:135
 msgid "help_keywords"
 msgstr "Bilatuko diren etiketak. Iragazki hau ez da erabiliko erroko nodoa bilduma bat bada."
 
 #. Default: "Filter contents using the review state. Leave blank to use the site default. This filter will be ignored if you select a collection as \"Root node\""
-#: ../calendar.py:115
+#: ../calendar.py:124
 msgid "help_review_state"
 msgstr "Egoeraren araberako iragazkia. Ez aukeratu ezer webgunearen defektuzkoa erabiltzeko. Iragazki hau ez da erabiliko erroko nodoa bilduma bat bada."
 
 #. Default: "Root node"
-#: ../calendar.py:101
+#: ../calendar.py:108
 msgid "label_calendarex_root_path"
 msgstr "Erroko nodoa"
 
 #. Default: "Title"
-#: ../calendar.py:93
+#: ../calendar.py:100
 msgid "label_calendarex_title"
 msgstr "Izenburua"
+
+#. Default: "Calendar Extended: $name"
+#: ../calendar.py:160
+msgid "portlet_title"
+msgstr ""
+

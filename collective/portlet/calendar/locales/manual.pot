@@ -14,3 +14,9 @@ msgstr ""
 "Preferred-Encodings: utf-8 latin1\n"
 "Domain: DOMAIN\n"
 
+msgid "Extended Calendar Portlet"
+msgstr ""
+
+msgid "A calendar portlet that supports configuration"
+msgstr ""
+
