@@ -90,6 +90,7 @@ class TestRenderer(unittest.TestCase):
 
     def setUp(self):
         self.portal = self.layer['portal']
+        self.portal.portal_types['Topic'].global_allow = True
         setRoles(self.portal, TEST_USER_ID, ['Manager'])
         self.portal_path = '/'.join(self.portal.getPhysicalPath())
         self.portal.portal_workflow.setChainForPortalTypes(
@@ -176,6 +177,11 @@ class TestRenderer(unittest.TestCase):
         type_crit = topic.addCriterion('Type', 'ATPortalTypeCriterion')
         type_crit.setValue(['Event'])
 
+    def createCollection(self):
+        self.portal.invokeFactory('Collection', 'example-events',)
+        collection = self.portal['example-events']
+        collection.setQuery([{'i': 'portal_type', 'o': 'plone.app.querystring.operation.selection.is', 'v': ['Event']}, ])
+
     def genDates(self, delta):
         now = DateTime()
         year, month = now.year(), now.month()
@@ -235,7 +241,7 @@ class TestRenderer(unittest.TestCase):
         self.assertEqual(
                     self.countEventsInPortlet(r.getEventsForCalendar()), 1)
 
-    def testEventsCollectionSearch(self):
+    def testEventsTopicSearch(self):
         # Create the events
         self.createTopicEvents()
         # Create the collection
@@ -253,6 +259,26 @@ class TestRenderer(unittest.TestCase):
                                                             'review_state',
                                                             'ATListCriterion')
         state_crit.setValue(['private', ])
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 1)
+
+    def testEventsCollectionSearch(self):
+        # Create the events
+        self.createTopicEvents()
+        # Create the collection
+        self.createCollection()
+        path = '/example-events'
+        r = self.renderer(assignment=calendar.Assignment(root=path,
+                          kw=['Foo', ]))
+        r.update()
+
+        # kw are ignored and also content type, so all events are displayed
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 2)
+        # adding a new criteria to the collection change results
+        collection = self.portal['example-events']
+        new_filter = [{'i': 'review_state', 'o': 'plone.app.querystring.operation.selection.is', 'v': ['private']}]
+        collection.setQuery(collection.getQuery(raw=True) + new_filter)
         self.assertEqual(
                     self.countEventsInPortlet(r.getEventsForCalendar()), 1)
 
