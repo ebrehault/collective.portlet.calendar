@@ -4,6 +4,9 @@ Changelog
 1.0b3 (unreleased)
 ^^^^^^^^^^^^^^^^^^
 
+- Drop support for Plone 4.0 and 4.1.
+  [hvelarde]
+
 - Remove also browserlayer when running unistall profile. [keul]
 - Uninstall profiles was not run on uninstall [keul]
 - Removed useless paster generated code (there's no Archetypes contents there).
