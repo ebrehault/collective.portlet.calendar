@@ -41,11 +41,25 @@ setup(name='collective.portlet.calendar',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-        'setuptools',
-        ],
+          'plone.app.collection',
+          'plone.app.portlets',
+          'plone.memoize',
+          'plone.portlets',
+          'Products.CMFCore',
+          'Products.GenericSetup',
+          'setuptools',
+          'zope.component',
+          'zope.interface',
+          'zope.schema',
+      ],
       extras_require={
-        'test': ['plone.app.testing'],
-        },
+          'test': [
+              'plone.app.testing',
+              'plone.browserlayer',
+              'plone.testing',
+              'unittest2',
+          ],
+      },
       entry_points="""
       [z3c.autoinclude.plugin]
       target = plone
