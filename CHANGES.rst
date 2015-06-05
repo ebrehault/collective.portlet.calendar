@@ -4,8 +4,11 @@ Changelog
 1.0b3 (unreleased)
 ^^^^^^^^^^^^^^^^^^
 
+- Fixed issue in the ``_render_cachekey`` method that gives some unexpected results
+  with collections under certain circumstances
+  [keul]
 - Fixed illogical behavior with collections: if you do not provide any
-  ``review_state`` filter, a statis set of "published" and "private" was used
+  ``review_state`` filter, a static ("published", "private") was used
   [keul]
 - Folder were not selectable as root object [keul]
 - Drop support for Plone 4.0 and 4.1.

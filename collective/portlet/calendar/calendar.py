@@ -72,11 +72,11 @@ def _render_cachekey(fun, self):
                 options = parseFormquery(root_content, root_content.getField('query').getRaw(root_content))
 
         if options:
-            # Topic
+            # Collection
             options['start'] = {'query': end, 'range': 'max'}
             options['end'] = {'query': start, 'range': 'min'}
             if not options.get('review_state'):
-                options['review_state'] = ''
+                options['review_state'] = self.calendar.getCalendarStates()
             brains = catalog(**options)
         else:
             # Folder or site root
@@ -164,6 +164,7 @@ class Assignment(base.Assignment):
         return _('portlet_title',
                  u'Calendar Extended: $name',
                  mapping={'name': self.name or 'unnamed'})
+
 
 class Renderer(base.Renderer):
     _template = ViewPageTemplateFile('calendar.pt')
