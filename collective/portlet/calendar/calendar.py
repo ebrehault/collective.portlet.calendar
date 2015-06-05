@@ -5,6 +5,7 @@ from DateTime import DateTime
 from Products.ATContentTypes.interfaces import IATTopic
 from Products.CMFCore.utils import getToolByName
 from Products.CMFCore.interfaces import IFolderish
+from Products.ATContentTypes.interfaces.folder import IATFolder
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from StringIO import StringIO
 from ZTUtils import make_query
@@ -114,10 +115,12 @@ class ICalendarExPortlet(IPortletDataProvider):
                                     "You can also select a Collection for "
                                     "get only Events found by it."),
             required=False,
-            source=SearchableTextSourceBinder({'object_provides': [IATTopic.__identifier__,
-                                                                   ICollection.__identifier__,
-                                                                   IFolderish.__identifier__]},
-                                              default_query='path:'))
+            source=SearchableTextSourceBinder(
+                              {'object_provides': [IATTopic.__identifier__,
+                                                   ICollection.__identifier__,
+                                                   IFolderish.__identifier__,
+                                                   IATFolder.__identifier__]},
+                              default_query='path:'))
 
     review_state = schema.Tuple(
          title=_(u"Review state"),
@@ -134,8 +137,9 @@ class ICalendarExPortlet(IPortletDataProvider):
     kw = schema.Tuple(title=_(u"Keywords"),
                      description=_('help_keywords',
                                    default=u"Keywords to be search for. "
-                                            "This filter will be ignored if you select a "
-                                            "collection as \"Root node\""),
+                                            "This filter will be ignored if "
+                                            "you select a collection as "
+                                            "\"Root node\""),
                      default=(),
                      value_type=schema.TextLine()
                      )
