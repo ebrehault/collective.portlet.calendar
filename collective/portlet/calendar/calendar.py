@@ -233,7 +233,7 @@ class Renderer(base.Renderer):
                 options['review_state'] = self.data.review_state
         elif options and not options.get('review_state'):
             # if using a Topic, we need to override the calendar default behaviour with review state
-            options['review_state'] = ['published', 'private']
+            options['review_state'] = self.calendar.getCalendarStates()
 
         weeks = self.calendar.getEventsForCalendar(month, year, **options)
         for week in weeks:

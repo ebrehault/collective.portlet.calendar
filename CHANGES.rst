@@ -4,10 +4,12 @@ Changelog
 1.0b3 (unreleased)
 ^^^^^^^^^^^^^^^^^^
 
+- Fixed illogical behavior with collections: if you do not provide any
+  ``review_state`` filter, a statis set of "published" and "private" was used
+  [keul]
+- Folder were not selectable as root object [keul]
 - Drop support for Plone 4.0 and 4.1.
   [hvelarde]
-
-- Folder were not selectable as root object [keul]
 - Remove also browserlayer when running unistall profile. [keul]
 - Uninstall profiles was not run on uninstall [keul]
 - Removed useless paster generated code (there's no Archetypes contents there).
