@@ -127,34 +127,43 @@ class TestRenderer(unittest.TestCase):
         self.portal.portal_workflow.doActionFor(
                                     self.portal['folder2'], 'publish')
 
-        # We will add 3 events. On the root folder and on each subfolder
-        # Root event
+        # We will add 6 events: 2 on the root folder and 2 on each subfolders
+        # Root events
         start, end = self.genDates(delta=0)
         self.portal.invokeFactory('Event', 'e1', startDate=start, endDate=end)
         o = self.portal['e1']
         o.setSubject(['Meeting', ])
-        o.reindexObject()
         self.portal.portal_workflow.doActionFor(self.portal.e1, 'publish')
+        o.reindexObject()
+        self.portal.invokeFactory('Event', 'e2', startDate=start, endDate=end)
+        o = self.portal['e2']
+        o.setSubject(['Workshop', ])
+        o.reindexObject()
 
-        # Folder1 event
+        # Folder1 events
         start, end = self.genDates(delta=1)
         self.portal.folder1.invokeFactory(
-                                'Event', 'e2', startDate=start, endDate=end)
-        o = self.portal.folder1['e2']
+                                'Event', 'e3', startDate=start, endDate=end)
+        o = self.portal.folder1['e3']
         o.setSubject(['Meeting', ])
-        o.reindexObject()
         self.portal.portal_workflow.doActionFor(
-                                        self.portal.folder1.e2, 'publish')
+                                        self.portal.folder1.e3, 'publish')
+        o.reindexObject()
+        self.portal.folder1.invokeFactory(
+                                'Event', 'e4', startDate=start, endDate=end)
+        o = self.portal.folder1['e4']
+        o.setSubject(['Workshop', ])
+        o.reindexObject()
 
-        # Folder2 event
+        # Folder2 events
         start, end = self.genDates(delta=2)
         self.portal.folder2.invokeFactory(
-                            'Event', 'e3', startDate=start, endDate=end)
-        o = self.portal.folder2['e3']
+                            'Event', 'e5', startDate=start, endDate=end)
+        o = self.portal.folder2['e5']
         o.setSubject(['Party', 'OpenBar', ])
-        o.reindexObject()
         self.portal.portal_workflow.doActionFor(
-                                        self.portal.folder2.e3, 'publish')
+                                        self.portal.folder2.e5, 'publish')
+        o.reindexObject()
 
     def createTopicEvents(self):
         # Create subfolders
@@ -164,12 +173,18 @@ class TestRenderer(unittest.TestCase):
 
         start, end = self.genDates(delta=0)
         folder1.invokeFactory('Event', 'e1', startDate=start, endDate=end)
-        folder1.e1.reindexObject()
         self.portal.portal_workflow.doActionFor(folder1.e1, 'publish')
-
-        start, end = self.genDates(delta=2)
+        folder1.e1.reindexObject()
         folder1.invokeFactory('Event', 'e2', startDate=start, endDate=end)
         folder1.e2.reindexObject()
+
+        start, end = self.genDates(delta=2)
+        folder1.invokeFactory('Event', 'e3', startDate=start, endDate=end)
+        self.portal.portal_workflow.doActionFor(folder1.e3, 'publish')
+        folder1.e3.reindexObject()
+        start, end = self.genDates(delta=2)
+        folder1.invokeFactory('Event', 'e4', startDate=start, endDate=end)
+        folder1.e4.reindexObject()
 
     def createTopic(self):
         self.portal.invokeFactory('Topic', 'example-events',)
@@ -180,7 +195,9 @@ class TestRenderer(unittest.TestCase):
     def createCollection(self):
         self.portal.invokeFactory('Collection', 'example-events',)
         collection = self.portal['example-events']
-        collection.setQuery([{'i': 'portal_type', 'o': 'plone.app.querystring.operation.selection.is', 'v': ['Event']}, ])
+        collection.setQuery([{'i': 'portal_type',
+                              'o': 'plone.app.querystring.operation.selection.is',
+                              'v': ['Event']}, ])
 
     def genDates(self, delta):
         now = DateTime()
@@ -251,20 +268,21 @@ class TestRenderer(unittest.TestCase):
                           kw=['Foo', ]))
         r.update()
 
-        # kw are ignored and also content type, so all events are displayed
+        # kw are ignored and also content type, so published events are
+        # returned
         self.assertEqual(
                     self.countEventsInPortlet(r.getEventsForCalendar()), 2)
         # adding a new criteria to the collection change results
         state_crit = self.portal['example-events'].addCriterion(
                                                             'review_state',
                                                             'ATListCriterion')
-        state_crit.setValue(['private', ])
+        state_crit.setValue(['private', 'published'])
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 1)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 4)
 
     def testEventsCollectionSearch(self):
         # Create the events
-        self.createTopicEvents()
+        self.createEvents()
         # Create the collection
         self.createCollection()
         path = '/example-events'
@@ -272,21 +290,24 @@ class TestRenderer(unittest.TestCase):
                           kw=['Foo', ]))
         r.update()
 
-        # kw are ignored and also content type, so all events are displayed
+        # kw are ignored and also content type, so published events are
+        # returned
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 2)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 3)
         # adding a new criteria to the collection change results
         collection = self.portal['example-events']
-        new_filter = [{'i': 'review_state', 'o': 'plone.app.querystring.operation.selection.is', 'v': ['private']}]
+        new_filter = [{'i': 'review_state',
+                       'o': 'plone.app.querystring.operation.selection.is',
+                       'v': ['published', 'private']}]
         collection.setQuery(collection.getQuery(raw=True) + new_filter)
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 1)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 5)
 
     def testEventsKwSearch(self):
         # Create the events
         self.createEvents()
         # Render a portlet without a root assignment
-        path = '%s' % self.portal_path
+        path = self.portal_path
         r = self.renderer(assignment=calendar.Assignment())
         r.update()
         self.assertEqual(r.root(), path)
