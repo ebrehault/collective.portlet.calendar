@@ -119,7 +119,7 @@
                                                            title day/eventstring;"
                                            tal:content="daynumber" /><a href=""
                                            tal:condition="python:view.rootTopic()"
-                                           tal:attributes="href string:${navigation_root_url}/@@search?start.query:record:list:date=${day/date_string}+23%3A59%3A59&amp;start.range:record=max&amp;end.query:record:list:date=${day/date_string}+00%3A00%3A00&amp;end.range:record=min;
+                                           tal:attributes="href string:${navigation_root_url}/@@search?start.query:record:list:date=${day/date_string}+23%3A59%3A59&amp;start.range:record=max&amp;end.query:record:list:date=${day/date_string}+00%3A00%3A00&amp;end.range:record=min&amp;${view/collection_querystring};
                                                            title day/eventstring;"
                                            tal:content="daynumber" /></strong></td
                                     ><tal:notdayevent tal:condition="not: day_event"

@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+import urllib
 from Acquisition import aq_inner
 from DateTime import DateTime
 from Products.ATContentTypes.interfaces import IATTopic
@@ -24,6 +25,7 @@ from zope import schema
 from zope.component import getMultiAdapter
 from zope.formlib import form
 from zope.interface import implements
+from ZTUtils import make_query
 
 
 def _render_cachekey(fun, self):
@@ -172,6 +174,7 @@ class Renderer(base.Renderer):
     def __init__(self, context, request, view, manager, data):
         base.Renderer.__init__(self, context, request, view, manager, data)
         self.updated = False
+        self.options = {}
 
     @ram.cache(_render_cachekey)
     def render(self):
@@ -210,33 +213,44 @@ class Renderer(base.Renderer):
             navigation_root_path = portal_state.navigation_root_path()
         return navigation_root_path
 
+    def collection_querystring(self):
+        return make_query(self.options)
+        return urllib.urlencode(self.options)
+
     def getEventsForCalendar(self):
         context = aq_inner(self.context)
         year = self.year
         month = self.month
         navigation_root_path = self.root()
 
-        options = {}
+        self.options = {}
         if navigation_root_path:
             root_content = self.rootTopic()
             if root_content:
                 if IATTopic.providedBy(root_content):
-                    options = root_content.buildQuery()
+                    self.options = root_content.buildQuery()
                 elif ICollection.providedBy(root_content):
-                    options = parseFormquery(root_content, root_content.getField('query').getRaw(root_content))
+                    self.options = parseFormquery(root_content, root_content.getField('query').getRaw(root_content))
 
-        if not options:
-            # Folder, or site root
-            options['path'] = navigation_root_path
+        if not self.options:
+            # Folder, or site root.
+            # CalendarTool behavior is kept, but portlet options can change search results
+            self.options['path'] = navigation_root_path
             if self.data.kw:
-                options['Subject'] = self.data.kw
+                self.options['Subject'] = self.data.kw
             if self.data.review_state:
-                options['review_state'] = self.data.review_state
-        elif options and not options.get('review_state'):
+                self.options['review_state'] = list(self.data.review_state)
+        elif self.options and not self.options.get('review_state'):
             # if using a Topic, we need to override the calendar default behaviour with review state
-            options['review_state'] = self.calendar.getCalendarStates()
+            self.options['review_state'] = list(self.calendar.getCalendarStates())
 
-        weeks = self.calendar.getEventsForCalendar(month, year, **options)
+        # Type check: seems that new style collections are returning parameters as tuples
+        # this is not compatible with ZTUtils,mase_query
+        for k,v in self.options.items():
+            if isinstance(v, tuple):
+                self.options[k] = list(v)
+
+        weeks = self.calendar.getEventsForCalendar(month, year, **self.options)
         for week in weeks:
             for day in week:
                 daynumber = day['day']
@@ -253,7 +267,7 @@ class Renderer(base.Renderer):
 
     def getReviewStateString(self):
         states = self.data.review_state or self.calendar.getCalendarStates()
-        return ''.join(map(lambda x: 'review_state=%s&amp;' % self.url_quote_plus(x), states))
+        return ''.join(map(lambda x: 'review_state=%s&' % self.url_quote_plus(x), states))
 
 
 class AddForm(base_portlet.AddForm):
