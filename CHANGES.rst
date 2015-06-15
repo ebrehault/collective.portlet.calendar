@@ -4,10 +4,10 @@ Changelog
 1.0b3 (unreleased)
 ^^^^^^^^^^^^^^^^^^
 
-- Calendar URI querystring parameters are now applied when root object id used
+- Calendar URI querystring parameters are now applied when root object is used
   [keul]
-- Fixed issue in the ``_render_cachekey`` method that gives some unexpected results
-  with collections under certain circumstances
+- Fixed issue in the ``_render_cachekey`` method that gives some unexpected
+  results with collections under certain circumstances
   [keul]
 - Fixed illogical behavior with collections: if you do not provide any
   ``review_state`` filter, a static ("published", "private") was used
