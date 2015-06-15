@@ -147,6 +147,15 @@ class ICalendarExPortlet(IPortletDataProvider):
                      )
 
 
+def untuple(options):
+    """Seems that catalog only talk well with list, not tuples"""
+    for k,v in options.items():
+        if isinstance(v, tuple):
+            options[k] = list(v)
+        elif isinstance(v, dict):
+            untuple(v)
+
+
 class Assignment(base.Assignment):
     implements(ICalendarExPortlet)
 
@@ -215,7 +224,6 @@ class Renderer(base.Renderer):
 
     def collection_querystring(self):
         return make_query(self.options)
-        return urllib.urlencode(self.options)
 
     def getEventsForCalendar(self):
         context = aq_inner(self.context)
@@ -246,9 +254,7 @@ class Renderer(base.Renderer):
 
         # Type check: seems that new style collections are returning parameters as tuples
         # this is not compatible with ZTUtils,mase_query
-        for k,v in self.options.items():
-            if isinstance(v, tuple):
-                self.options[k] = list(v)
+        untuple(self.options)
 
         weeks = self.calendar.getEventsForCalendar(month, year, **self.options)
         for week in weeks:
