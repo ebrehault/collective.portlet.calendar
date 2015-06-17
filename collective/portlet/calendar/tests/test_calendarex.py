@@ -1,22 +1,17 @@
 import unittest2 as unittest
-
-from zope.component import getUtility, getMultiAdapter
-
+from DateTime import DateTime
+from Products.GenericSetup.utils import _getDottedName
+from collective.portlet.calendar import calendar
+from collective.portlet.calendar.calendar import Renderer
+from collective.portlet.calendar.testing import INTEGRATION_TESTING
 from plone.app.testing import TEST_USER_ID
 from plone.app.testing import setRoles
-
-from Products.GenericSetup.utils import _getDottedName
-
-from plone.portlets.interfaces import IPortletType
-from plone.portlets.interfaces import IPortletManager
 from plone.portlets.interfaces import IPortletAssignment
 from plone.portlets.interfaces import IPortletDataProvider
+from plone.portlets.interfaces import IPortletManager
 from plone.portlets.interfaces import IPortletRenderer
-
-from DateTime import DateTime
-from collective.portlet.calendar import calendar
-
-from collective.portlet.calendar.testing import INTEGRATION_TESTING
+from plone.portlets.interfaces import IPortletType
+from zope.component import getUtility, getMultiAdapter
 
 
 class TestPortlet(unittest.TestCase):
@@ -82,6 +77,68 @@ class TestPortlet(unittest.TestCase):
         renderer = getMultiAdapter((context, request, view,
                                     manager, assignment), IPortletRenderer)
         self.assertTrue(isinstance(renderer, calendar.Renderer))
+
+
+class TestRendererBase(unittest.TestCase):
+
+    layer = INTEGRATION_TESTING
+
+    def setUp(self):
+        self.renderer = Renderer(self.layer['portal'], self.layer['request'],
+                                 None, None, {})
+        year = 2014
+        month = 5
+        self.renderer.update()
+        calendar = self.renderer.calendar
+        last_day = calendar._getCalendar().monthrange(year, month)[1]
+        self.first_date = calendar.getBeginAndEndTimes(1, month, year)[0]
+        self.last_date = calendar.getBeginAndEndTimes(last_day, month, year)[1]
+        self.renderer.year = year
+        self.renderer.month = month
+
+    def test_fix_range_criteria_start(self):
+        renderer = self.renderer
+        d1 = DateTime('2014/05/10')
+        renderer.options = {'start': {'query': d1, 'range': 'min'}}
+        renderer._fix_range_criteria('start')
+        self.assertEqual(renderer.options,
+                         {'start': {'query': [d1, self.last_date],
+                                    'range': 'minmax'}})
+        d1 = DateTime('2014/05/25')
+        renderer.options = {'start': {'query': d1, 'range': 'max'}}
+        renderer._fix_range_criteria('start')
+        self.assertEqual(renderer.options,
+                         {'start': {'query': [d1, self.last_date],
+                                    'range': 'max'}})
+        d1 = DateTime('2014/05/10')
+        d2 = DateTime('2014/06/08')
+        renderer.options = {'start': {'query': [d1, d2], 'range': 'minmax'}}
+        renderer._fix_range_criteria('start')
+        self.assertEqual(renderer.options,
+                         {'start': {'query': [d1, self.last_date],
+                                    'range': 'minmax'}})
+
+    def test_fix_range_criteria_end(self):
+        renderer = self.renderer
+        d1 = DateTime('2014/05/20')
+        renderer.options = {'end': {'query': d1, 'range': 'max'}}
+        renderer._fix_range_criteria('end')
+        self.assertEqual(renderer.options,
+                         {'end': {'query': [d1, self.first_date],
+                                  'range': 'minmax'}})
+        d1 = DateTime('2014/05/15')
+        renderer.options = {'end': {'query': d1, 'range': 'min'}}
+        renderer._fix_range_criteria('end')
+        self.assertEqual(renderer.options,
+                         {'end': {'query': [d1, self.first_date],
+                                  'range': 'min'}})
+        d1 = DateTime('2014/02/05')
+        d2 = DateTime('2014/05/15')
+        renderer.options = {'end': {'query': [d1, d2], 'range': 'minmax'}}
+        renderer._fix_range_criteria('end')
+        self.assertEqual(renderer.options,
+                         {'end': {'query': [d2, self.first_date],
+                                  'range': 'minmax'}})
 
 
 class TestRenderer(unittest.TestCase):

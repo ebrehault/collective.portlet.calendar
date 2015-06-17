@@ -2,6 +2,7 @@
 
 import urllib
 from Acquisition import aq_inner
+from DateTime.interfaces import IDateTime
 from DateTime import DateTime
 from Products.ATContentTypes.interfaces import IATTopic
 from Products.CMFCore.utils import getToolByName
@@ -230,12 +231,15 @@ class Renderer(base.Renderer):
         Calendar commonly preset criteria like these:
             'start': {'query': last_date, 'range': 'max'}
             'end': {'query': first_date, 'range': 'min'}
-        We must take care of collections that already use start or end criteria.
+        We must take care of collections that already use start or end criteria and be
+        sure that we don't allow dates outside the current month
         """
         year = self.year
         month = self.month
         criteria = self.options[index]
-        criteria['query'] = [criteria['query']]
+        if IDateTime.providedBy(criteria['query']):
+            criteria['query'] = [criteria['query']]
+        criteria['query'] = [d for d in criteria['query'] if d.year()==year and d.month()==month]
 
         if index=='start':
             last_day = self.calendar._getCalendar().monthrange(year, month)[1]

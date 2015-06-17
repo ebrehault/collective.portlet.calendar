@@ -4,6 +4,9 @@ Changelog
 1.0b3 (unreleased)
 ^^^^^^^^^^^^^^^^^^
 
+- Be sure that start/end criteria in collections never use values outside the
+  current month
+  [keul]
 - Fixed issue that make calendar display weird days when Collections use start
   or end criteria as calendar machinery already do
   [keul]
