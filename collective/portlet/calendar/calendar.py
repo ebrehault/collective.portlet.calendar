@@ -63,7 +63,7 @@ def _render_cachekey(fun, self):
         catalog = getToolByName(context, 'portal_catalog')
         path = navigation_root_path
         review_state = self.data.review_state or \
-                       self.calendar.getCalendarStates()
+                       catalog.uniqueValuesFor('review_state')
 
         options = {}
         if navigation_root_path:
@@ -259,6 +259,8 @@ class Renderer(base.Renderer):
         year = self.year
         month = self.month
         navigation_root_path = self.root()
+        catalog = getToolByName(self.context, 'portal_catalog')
+        all_review_states = catalog.uniqueValuesFor('review_state')
 
         self.options = {}
         if navigation_root_path:
@@ -271,12 +273,11 @@ class Renderer(base.Renderer):
 
         if not self.options:
             # Folder, or site root.
-            # CalendarTool behavior is kept, but portlet options can change search results
             self.options['path'] = navigation_root_path
             if self.data.kw:
                 self.options['Subject'] = self.data.kw
-            if self.data.review_state:
-                self.options['review_state'] = list(self.data.review_state)
+            self.options['review_state'] = list(self.data.review_state) \
+                    if self.data.review_state else all_review_states 
         elif self.options:
             # Collection
             # We must handle in a special way "start" and "end" criteria
@@ -286,7 +287,7 @@ class Renderer(base.Renderer):
                 self._fix_range_criteria('end')
             if not self.options.get('review_state'):
                 # We need to override the calendar default behaviour with review state
-                self.options['review_state'] = list(self.calendar.getCalendarStates())
+                self.options['review_state'] = all_review_states
 
         # Type check: seems that new style collections are returning parameters as tuples
         # this is not compatible with ZTUtils.make_query

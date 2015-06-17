@@ -297,7 +297,7 @@ class TestRenderer(unittest.TestCase):
         r.update()
         self.assertEqual(r.root(), path)
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 3)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 5)
 
         # Render a portlet with a root assignment to folder1
         path = '/folder1'
@@ -305,7 +305,7 @@ class TestRenderer(unittest.TestCase):
         r.update()
         self.assertEqual(r.root(), '%s%s' % (self.portal_path, path))
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 1)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 2)
 
         # Render a portlet with a root assignment to folder2
         path = '/folder2'
@@ -328,14 +328,14 @@ class TestRenderer(unittest.TestCase):
         # kw are ignored and also content type, so published events are
         # returned
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 2)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 4)
         # adding a new criteria to the collection change results
         state_crit = self.portal['example-events'].addCriterion(
                                                             'review_state',
                                                             'ATListCriterion')
-        state_crit.setValue(['private', 'published'])
+        state_crit.setValue(['published'])
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 4)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 2)
 
     def testEventsCollectionSearch(self):
         # Create the events
@@ -347,18 +347,17 @@ class TestRenderer(unittest.TestCase):
                           kw=['Foo', ]))
         r.update()
 
-        # kw are ignored and also content type, so published events are
-        # returned
+        # kw are ignored and also content type, so all event's are returned
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 3)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 5)
         # adding a new criteria to the collection change results
         collection = self.portal['example-events']
         new_filter = [{'i': 'review_state',
                        'o': 'plone.app.querystring.operation.selection.is',
-                       'v': ['published', 'private']}]
+                       'v': ['published']}]
         collection.setQuery(collection.getQuery(raw=True) + new_filter)
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 5)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 3)
 
     def testEventsKwSearch(self):
         # Create the events
@@ -369,7 +368,7 @@ class TestRenderer(unittest.TestCase):
         r.update()
         self.assertEqual(r.root(), path)
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 3)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 5)
 
         # Render a portlet showing only Meetings
         kw = ['Meeting', ]
@@ -389,6 +388,33 @@ class TestRenderer(unittest.TestCase):
         kw = ['Meeting', ]
         path = '/folder1'
         r = self.renderer(assignment=calendar.Assignment(root=path, kw=kw))
+        r.update()
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 1)
+        self.assertEqual(r.root(), '%s%s' % (self.portal_path, path))
+
+    def testEventsReviewStateSearch(self):
+        # Create the events
+        self.createEvents()
+        # Render a portlet without a root assignment
+        path = self.portal_path
+        r = self.renderer(assignment=calendar.Assignment())
+        r.update()
+        self.assertEqual(r.root(), path)
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 5)
+
+        # Render a portlet showing only private events
+        review_state = ['private', ]
+        r = self.renderer(assignment=calendar.Assignment(review_state=review_state))
+        r.update()
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 2)
+
+        # Render a portlet showing published events under folder1
+        review_state = ['published', ]
+        path = '/folder1'
+        r = self.renderer(assignment=calendar.Assignment(root=path, review_state=review_state))
         r.update()
         self.assertEqual(
                     self.countEventsInPortlet(r.getEventsForCalendar()), 1)
