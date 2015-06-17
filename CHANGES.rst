@@ -4,6 +4,9 @@ Changelog
 1.0b3 (unreleased)
 ^^^^^^^^^^^^^^^^^^
 
+- Fixed issue that make calendar display weird days when Collections use start
+  or end criteria as calendar machinery already do
+  [keul]
 - Calendar URI querystring parameters are now applied when root object is used
   [keul]
 - Fixed issue in the ``_render_cachekey`` method that gives some unexpected

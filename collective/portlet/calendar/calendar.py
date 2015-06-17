@@ -225,6 +225,31 @@ class Renderer(base.Renderer):
     def collection_querystring(self):
         return make_query(self.options)
 
+    def _fix_range_criteria(self, index):
+        """
+        Calendar commonly preset criteria like these:
+            'start': {'query': last_date, 'range': 'max'}
+            'end': {'query': first_date, 'range': 'min'}
+        We must take care of collections that already use start or end criteria.
+        """
+        year = self.year
+        month = self.month
+        criteria = self.options[index]
+        criteria['query'] = [criteria['query']]
+
+        if index=='start':
+            last_day = self.calendar._getCalendar().monthrange(year, month)[1]
+            calendar_date = self.calendar.getBeginAndEndTimes(last_day, month, year)[1]
+            criteria['query'].append(calendar_date)
+            if criteria['range']=='min':
+                criteria['range']='minmax'
+        elif index=='end':
+            calendar_date = self.calendar.getBeginAndEndTimes(1, month, year)[0]
+            criteria['query'].append(calendar_date)
+            if criteria['range']=='max':
+                criteria['range']='minmax'
+        self.options[index] = criteria
+
     def getEventsForCalendar(self):
         context = aq_inner(self.context)
         year = self.year
@@ -248,12 +273,19 @@ class Renderer(base.Renderer):
                 self.options['Subject'] = self.data.kw
             if self.data.review_state:
                 self.options['review_state'] = list(self.data.review_state)
-        elif self.options and not self.options.get('review_state'):
-            # if using a Topic, we need to override the calendar default behaviour with review state
-            self.options['review_state'] = list(self.calendar.getCalendarStates())
+        elif self.options:
+            # Collection
+            # We must handle in a special way "start" and "end" criteria
+            if 'start' in self.options.keys():
+                self._fix_range_criteria('start')
+            if 'end' in self.options.keys():
+                self._fix_range_criteria('end')
+            if not self.options.get('review_state'):
+                # We need to override the calendar default behaviour with review state
+                self.options['review_state'] = list(self.calendar.getCalendarStates())
 
         # Type check: seems that new style collections are returning parameters as tuples
-        # this is not compatible with ZTUtils,mase_query
+        # this is not compatible with ZTUtils.make_query
         untuple(self.options)
 
         weeks = self.calendar.getEventsForCalendar(month, year, **self.options)
