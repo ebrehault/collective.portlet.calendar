@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 
 from Acquisition import aq_inner
-from DateTime.interfaces import IDateTime
 from DateTime import DateTime
 from Products.ATContentTypes.interfaces import IATTopic
 from Products.CMFCore.utils import getToolByName
@@ -235,8 +234,12 @@ class Renderer(base.Renderer):
         year = self.year
         month = self.month
         criteria = self.options[index]
-        if IDateTime.providedBy(criteria['query']):
+        if not isinstance(criteria['query'], list):
             criteria['query'] = [criteria['query']]
+
+        # New style collection return a string for date criteria... awful but true
+        criteria['query'] = [DateTime(d) if isinstance(d, basestring) else d for d in criteria['query']]
+        # keep only dates inside the current month
         criteria['query'] = [d for d in criteria['query'] if d.year() == year and d.month() == month]
 
         if index == 'start':
@@ -278,6 +281,9 @@ class Renderer(base.Renderer):
                     if self.data.review_state else all_review_states
         else:
             # Collection
+            # Type check: seems that new style collections are returning parameters as tuples
+            # this is not compatible with ZTUtils.make_query
+            untuple(self.options)
             # We must handle in a special way "start" and "end" criteria
             if 'start' in self.options.keys():
                 self._fix_range_criteria('start')
@@ -286,10 +292,6 @@ class Renderer(base.Renderer):
             if not self.options.get('review_state'):
                 # We need to override the calendar default behaviour with review state
                 self.options['review_state'] = all_review_states
-
-        # Type check: seems that new style collections are returning parameters as tuples
-        # this is not compatible with ZTUtils.make_query
-        untuple(self.options)
 
         weeks = self.calendar.getEventsForCalendar(month, year, **self.options)
         for week in weeks:

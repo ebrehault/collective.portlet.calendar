@@ -118,6 +118,30 @@ class TestRendererBase(unittest.TestCase):
                          {'start': {'query': [d1, self.last_date],
                                     'range': 'minmax'}})
 
+    def test_fix_range_criteria_start_new_collection(self):
+        # WTF: new style collections are returning "strings" 
+        renderer = self.renderer
+        d1 = '2014/05/10'
+        renderer.options = {'start': {'query': d1, 'range': 'min'}}
+        renderer._fix_range_criteria('start')
+        self.assertEqual(renderer.options,
+                         {'start': {'query': [DateTime(d1), self.last_date],
+                                    'range': 'minmax'}})
+        d1 = DateTime('2014/05/25')
+        renderer.options = {'start': {'query': d1, 'range': 'max'}}
+        renderer._fix_range_criteria('start')
+        self.assertEqual(renderer.options,
+                         {'start': {'query': [d1, self.last_date],
+                                    'range': 'max'}})
+        d1 = DateTime('2014/05/10')
+        d2 = DateTime('2014/06/08')
+        renderer.options = {'start': {'query': [d1, d2], 'range': 'minmax'}}
+        renderer._fix_range_criteria('start')
+        self.assertEqual(renderer.options,
+                         {'start': {'query': [d1, self.last_date],
+                                    'range': 'minmax'}})
+
+
     def test_fix_range_criteria_end(self):
         renderer = self.renderer
         d1 = DateTime('2014/05/20')
