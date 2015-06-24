@@ -34,8 +34,8 @@ def _render_cachekey(fun, self):
     if self.calendar.getUseSession():
         raise ram.DontCache()
     else:
-        portal_state = getMultiAdapter((context, self.request),
-                                        name=u'plone_portal_state')
+        portal_state = getMultiAdapter(
+            (context, self.request), name=u'plone_portal_state')
         key = StringIO()
         print >> key, self.data.kw
         print >> key, self.data.review_state
@@ -60,12 +60,11 @@ def _render_cachekey(fun, self):
         catalog = getToolByName(context, 'portal_catalog')
         path = navigation_root_path
         review_state = self.data.review_state or \
-                       catalog.uniqueValuesFor('review_state')
+            catalog.uniqueValuesFor('review_state')
 
         options = {}
         if navigation_root_path:
-            root_content = \
-                    self.context.restrictedTraverse(navigation_root_path)
+            root_content = self.context.restrictedTraverse(navigation_root_path)
             if IATTopic.providedBy(root_content):
                 options = root_content.buildQuery()
             elif ICollection.providedBy(root_content):
@@ -98,51 +97,56 @@ class ICalendarExPortlet(IPortletDataProvider):
     """
 
     name = schema.TextLine(
-        title=_(u"label_calendarex_title", default=u"Title"),
-        description=_(u"help_calendarex_title",
-                      default=u"The title of this portlet. Leave blank to "
-                               "do not display portlet title."),
+        title=_(u'label_calendarex_title', default=u'Title'),
+        description=_(
+            u'help_calendarex_title',
+            default=u'The title of this portlet. Leave blank to '
+                    u'do not display portlet title.'),
         default=u"",
         required=False)
 
     root = schema.Choice(
-            title=_(u"label_calendarex_root_path", default=u"Root node"),
-            description=_(u'help_calendarex_root',
-                          default=u"You may search for and choose a folder "
-                                    "to act as the root of search for this "
-                                    "portlet. "
-                                    "Leave blank to use the Plone site root. "
-                                    "You can also select a Collection for "
-                                    "get only Events found by it."),
-            required=False,
-            source=SearchableTextSourceBinder(
-                              {'object_provides': [IATTopic.__identifier__,
-                                                   ICollection.__identifier__,
-                                                   IFolderish.__identifier__,
-                                                   IATFolder.__identifier__]},
-                              default_query='path:'))
+        title=_(u'label_calendarex_root_path', default=u'Root node'),
+        description=_(
+            u'help_calendarex_root',
+            default=u'You may search for and choose a folder '
+                    u'to act as the root of search for this '
+                    u'portlet. '
+                    u'Leave blank to use the Plone site root. '
+                    u'You can also select a Collection for '
+                    u'get only Events found by it.'),
+        required=False,
+        source=SearchableTextSourceBinder(
+            {'object_provides': [IATTopic.__identifier__,
+                                 ICollection.__identifier__,
+                                 IFolderish.__identifier__,
+                                 IATFolder.__identifier__]},
+            default_query='path:'))
 
     review_state = schema.Tuple(
-         title=_(u"Review state"),
-         description=_('help_review_state',
-                       default=u"Filter contents using the review state. "
-                                "Leave blank to use the site default. "
-                                "This filter will be ignored if you select a "
-                                "collection as \"Root node\""),
-         default=(),
-         value_type=schema.Choice(
-                        vocabulary='plone.app.vocabularies.WorkflowStates'),
-         required=False)
+        title=_(u'Review state'),
+        description=_(
+            'help_review_state',
+            default=u'Filter contents using the review state. '
+                    u'Leave blank to use the site default. '
+                    u'This filter will be ignored if you select a '
+                    u'collection as "Root node"'),
+        default=(),
+        value_type=schema.Choice(
+            vocabulary='plone.app.vocabularies.WorkflowStates'),
+        required=False)
 
-    kw = schema.Tuple(title=_(u"Keywords"),
-                     description=_('help_keywords',
-                                   default=u"Keywords to be search for. "
-                                            "This filter will be ignored if "
-                                            "you select a collection as "
-                                            "\"Root node\""),
-                     default=(),
-                     value_type=schema.TextLine()
-                     )
+    kw = schema.Tuple(
+        title=_(u'Keywords'),
+        description=_(
+            'help_keywords',
+            default=u'Keywords to be search for. '
+                    u'This filter will be ignored if '
+                    u'you select a collection as '
+                    u'"Root node"'),
+        default=(),
+        value_type=schema.TextLine()
+    )
 
 
 def untuple(options):
@@ -212,8 +216,8 @@ class Renderer(base.Renderer):
         return self.data.name or ''
 
     def root(self):
-        portal_state = getMultiAdapter((self.context, self.request),
-                                        name=u'plone_portal_state')
+        portal_state = getMultiAdapter(
+            (self.context, self.request), name=u'plone_portal_state')
         if self.data.root:
             navigation_root_path = '%s%s' % (portal_state.navigation_root_path(), self.data.root)
         else:
@@ -278,7 +282,7 @@ class Renderer(base.Renderer):
             if self.data.kw:
                 self.options['Subject'] = self.data.kw
             self.options['review_state'] = self.data.review_state \
-                    if self.data.review_state else all_review_states
+                if self.data.review_state else all_review_states
         else:
             # Collection
             # Type check: seems that new style collections are returning parameters as tuples
@@ -303,8 +307,8 @@ class Renderer(base.Renderer):
                 if day['event']:
                     cur_date = DateTime(year, month, daynumber)
                     localized_date = [self._ts.ulocalized_time(cur_date, context=context, request=self.request)]
-                    day['eventstring'] = '\n'.join(localized_date + [' %s' %
-                        self.getEventString(e) for e in day['eventslist']])
+                    day['eventstring'] = '\n'.join(
+                        localized_date + [' %s' % self.getEventString(e) for e in day['eventslist']])
                     day['date_string'] = '%s-%s-%s' % (year, month, daynumber)
         return weeks
 
@@ -316,8 +320,8 @@ class Renderer(base.Renderer):
 class AddForm(base_portlet.AddForm):
     form_fields = form.Fields(ICalendarExPortlet)
     form_fields['root'].custom_widget = UberSelectionWidget
-    label = _(u"Add Calendar Extended Portlet")
-    description = _(u"This calendar portlet allows choosing a subpath.")
+    label = _(u'Add Calendar Extended Portlet')
+    description = _(u'This calendar portlet allows choosing a subpath.')
 
     def create(self, data):
         return Assignment(**data)
@@ -326,5 +330,5 @@ class AddForm(base_portlet.AddForm):
 class EditForm(base_portlet.EditForm):
     form_fields = form.Fields(ICalendarExPortlet)
     form_fields['root'].custom_widget = UberSelectionWidget
-    label = _(u"Edit Calendar Extended Portlet")
-    description = _(u"This calendar portlet allows choosing a subpath.")
+    label = _(u'Edit Calendar Extended Portlet')
+    description = _(u'This calendar portlet allows choosing a subpath.')
