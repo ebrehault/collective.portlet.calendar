@@ -24,20 +24,20 @@ class TestPortlet(unittest.TestCase):
 
     def testPortletTypeRegistered(self):
         portlet = getUtility(IPortletType, name='portlets.CalendarEx')
-        self.assertEquals(portlet.addview, 'portlets.CalendarEx')
+        self.assertEqual(portlet.addview, 'portlets.CalendarEx')
 
     def testRegisteredInterfaces(self):
         portlet = getUtility(IPortletType, name='portlets.CalendarEx')
         registered_interfaces = [_getDottedName(i) for i in portlet.for_]
         registered_interfaces.sort()
-        self.assertEquals(['plone.app.portlets.interfaces.IColumn',
+        self.assertEqual(['plone.app.portlets.interfaces.IColumn',
           'plone.app.portlets.interfaces.IDashboard'],
           registered_interfaces)
 
     def testInterfaces(self):
         portlet = calendar.Assignment()
-        self.failUnless(IPortletAssignment.providedBy(portlet))
-        self.failUnless(IPortletDataProvider.providedBy(portlet.data))
+        self.assertTrue(IPortletAssignment.providedBy(portlet))
+        self.assertTrue(IPortletDataProvider.providedBy(portlet.data))
 
     def testInvokeAddview(self):
         portlet = getUtility(IPortletType, name='portlets.CalendarEx')
@@ -49,7 +49,7 @@ class TestPortlet(unittest.TestCase):
 
         addview.createAndAdd(data={'name': 'My Calendar',
                                    'root': u''})
-        self.assertEquals(len(mapping), 1)
+        self.assertEqual(len(mapping), 1)
         self.assertTrue(isinstance(mapping.values()[0], calendar.Assignment))
 
     def testPortletProperties(self):
