@@ -274,9 +274,9 @@ class Renderer(base.Renderer):
             self.options['path'] = navigation_root_path
             if self.data.kw:
                 self.options['Subject'] = self.data.kw
-            self.options['review_state'] = list(self.data.review_state) \
+            self.options['review_state'] = self.data.review_state \
                     if self.data.review_state else all_review_states
-        elif self.options:
+        else:
             # Collection
             # We must handle in a special way "start" and "end" criteria
             if 'start' in self.options.keys():
