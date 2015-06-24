@@ -5,11 +5,11 @@
     xmlns:plone="http://namespaces.plone.org/plone"
     xmlns:i18n="http://namespaces.zope.org/i18n"
     i18n_domain="collective.portlet.calendar">
-    
+
     <five:registerPackage package="." initialize=".initialize" />
-    
+
     <include package="plone.app.portlets" />
-    
+
     <genericsetup:registerProfile
         name="default"
         title="Extended Calendar Portlet"
@@ -18,7 +18,7 @@
         provides="Products.GenericSetup.interfaces.EXTENSION"
         i18n:attributes="title; description"
         />
-    
+
     <genericsetup:registerProfile
         name="uninstall"
         title="Uninstall: Extended Calendar Portlet"
@@ -27,7 +27,7 @@
         provides="Products.GenericSetup.interfaces.EXTENSION"
         i18n:attributes="title; description"
         />
-        
+
     <plone:portlet
         name="portlets.CalendarEx"
         interface=".calendar.ICalendarExPortlet"
@@ -36,11 +36,11 @@
         addview=".calendar.AddForm"
         editview=".calendar.EditForm"
     />
-    
+
     <i18n:registerTranslations directory="locales" />
     <include package=".browser" />
     <include package=".upgrades" />
 
     <!-- -*- extra stuff goes here -*- -->
-    
+
 </configure>

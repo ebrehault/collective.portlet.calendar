@@ -119,7 +119,7 @@ class TestRendererBase(unittest.TestCase):
                                     'range': 'minmax'}})
 
     def test_fix_range_criteria_start_new_collection(self):
-        # WTF: new style collections are returning "strings" 
+        # WTF: new style collections are returning "strings"
         renderer = self.renderer
         d1 = '2014/05/10'
         renderer.options = {'start': {'query': d1, 'range': 'min'}}
