@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 
-import urllib
 from Acquisition import aq_inner
 from DateTime.interfaces import IDateTime
 from DateTime import DateTime
@@ -26,7 +25,6 @@ from zope import schema
 from zope.component import getMultiAdapter
 from zope.formlib import form
 from zope.interface import implements
-from ZTUtils import make_query
 
 
 def _render_cachekey(fun, self):
@@ -150,7 +148,7 @@ class ICalendarExPortlet(IPortletDataProvider):
 
 def untuple(options):
     """Seems that catalog only talk well with list, not tuples"""
-    for k,v in options.items():
+    for k, v in options.items():
         if isinstance(v, tuple):
             options[k] = list(v)
         elif isinstance(v, dict):
@@ -239,19 +237,19 @@ class Renderer(base.Renderer):
         criteria = self.options[index]
         if IDateTime.providedBy(criteria['query']):
             criteria['query'] = [criteria['query']]
-        criteria['query'] = [d for d in criteria['query'] if d.year()==year and d.month()==month]
+        criteria['query'] = [d for d in criteria['query'] if d.year() == year and d.month() == month]
 
-        if index=='start':
+        if index == 'start':
             last_day = self.calendar._getCalendar().monthrange(year, month)[1]
             calendar_date = self.calendar.getBeginAndEndTimes(last_day, month, year)[1]
             criteria['query'].append(calendar_date)
-            if criteria['range']=='min':
-                criteria['range']='minmax'
-        elif index=='end':
+            if criteria['range'] == 'min':
+                criteria['range'] = 'minmax'
+        elif index == 'end':
             calendar_date = self.calendar.getBeginAndEndTimes(1, month, year)[0]
             criteria['query'].append(calendar_date)
-            if criteria['range']=='max':
-                criteria['range']='minmax'
+            if criteria['range'] == 'max':
+                criteria['range'] = 'minmax'
         self.options[index] = criteria
 
     def getEventsForCalendar(self):
@@ -277,7 +275,7 @@ class Renderer(base.Renderer):
             if self.data.kw:
                 self.options['Subject'] = self.data.kw
             self.options['review_state'] = list(self.data.review_state) \
-                    if self.data.review_state else all_review_states 
+                    if self.data.review_state else all_review_states
         elif self.options:
             # Collection
             # We must handle in a special way "start" and "end" criteria
