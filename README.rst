@@ -21,6 +21,20 @@ Even though Plone's default Calendar Portlet implementation is useful for most
 sites if you want to segment calendar's events or to provide more than one
 calendar per page, Extended Calendar Portlet comes to rescue.
 
+Filtering by review state
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Standard Plone calendar portlet use a global site settings for filter by review
+states (``portal_calendar`` ZMI tool, "Configure" settings).
+
+As this new portlet offer the same filter, the global site settings is
+*ignored* and the portlet's "Review state" data is used instead (even if
+empty).
+
+The only exception are collections, where both global settings and portlet
+settings are ignored; you must manually provide a review state criteria in the
+collections if you need it.
+
 Mostly Harmless
 ---------------
 

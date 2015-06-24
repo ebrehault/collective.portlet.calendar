@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 
-import urllib
 from Acquisition import aq_inner
 from DateTime import DateTime
 from Products.ATContentTypes.interfaces import IATTopic
@@ -25,7 +24,6 @@ from zope import schema
 from zope.component import getMultiAdapter
 from zope.formlib import form
 from zope.interface import implements
-from ZTUtils import make_query
 
 
 def _render_cachekey(fun, self):
@@ -62,7 +60,7 @@ def _render_cachekey(fun, self):
         catalog = getToolByName(context, 'portal_catalog')
         path = navigation_root_path
         review_state = self.data.review_state or \
-                       self.calendar.getCalendarStates()
+                       catalog.uniqueValuesFor('review_state')
 
         options = {}
         if navigation_root_path:
@@ -147,6 +145,15 @@ class ICalendarExPortlet(IPortletDataProvider):
                      )
 
 
+def untuple(options):
+    """Seems that catalog only talk well with list, not tuples"""
+    for k, v in options.items():
+        if isinstance(v, tuple):
+            options[k] = list(v)
+        elif isinstance(v, dict):
+            untuple(v)
+
+
 class Assignment(base.Assignment):
     implements(ICalendarExPortlet)
 
@@ -215,13 +222,46 @@ class Renderer(base.Renderer):
 
     def collection_querystring(self):
         return make_query(self.options)
-        return urllib.urlencode(self.options)
+
+    def _fix_range_criteria(self, index):
+        """
+        Calendar commonly preset criteria like these:
+            'start': {'query': last_date, 'range': 'max'}
+            'end': {'query': first_date, 'range': 'min'}
+        We must take care of collections that already use start or end criteria and be
+        sure that we don't allow dates outside the current month
+        """
+        year = self.year
+        month = self.month
+        criteria = self.options[index]
+        if not isinstance(criteria['query'], list):
+            criteria['query'] = [criteria['query']]
+
+        # New style collection return a string for date criteria... awful but true
+        criteria['query'] = [DateTime(d) if isinstance(d, basestring) else d for d in criteria['query']]
+        # keep only dates inside the current month
+        criteria['query'] = [d for d in criteria['query'] if d.year() == year and d.month() == month]
+
+        if index == 'start':
+            last_day = self.calendar._getCalendar().monthrange(year, month)[1]
+            calendar_date = self.calendar.getBeginAndEndTimes(last_day, month, year)[1]
+            criteria['query'].append(calendar_date)
+            if criteria['range'] == 'min':
+                criteria['range'] = 'minmax'
+        elif index == 'end':
+            calendar_date = self.calendar.getBeginAndEndTimes(1, month, year)[0]
+            criteria['query'].append(calendar_date)
+            if criteria['range'] == 'max':
+                criteria['range'] = 'minmax'
+        self.options[index] = criteria
 
     def getEventsForCalendar(self):
         context = aq_inner(self.context)
         year = self.year
         month = self.month
         navigation_root_path = self.root()
+        catalog = getToolByName(self.context, 'portal_catalog')
+        all_review_states = catalog.uniqueValuesFor('review_state')
 
         self.options = {}
         if navigation_root_path:
@@ -234,21 +274,24 @@ class Renderer(base.Renderer):
 
         if not self.options:
             # Folder, or site root.
-            # CalendarTool behavior is kept, but portlet options can change search results
             self.options['path'] = navigation_root_path
             if self.data.kw:
                 self.options['Subject'] = self.data.kw
-            if self.data.review_state:
-                self.options['review_state'] = list(self.data.review_state)
-        elif self.options and not self.options.get('review_state'):
-            # if using a Topic, we need to override the calendar default behaviour with review state
-            self.options['review_state'] = list(self.calendar.getCalendarStates())
-
-        # Type check: seems that new style collections are returning parameters as tuples
-        # this is not compatible with ZTUtils,mase_query
-        for k,v in self.options.items():
-            if isinstance(v, tuple):
-                self.options[k] = list(v)
+            self.options['review_state'] = self.data.review_state \
+                    if self.data.review_state else all_review_states
+        else:
+            # Collection
+            # Type check: seems that new style collections are returning parameters as tuples
+            # this is not compatible with ZTUtils.make_query
+            untuple(self.options)
+            # We must handle in a special way "start" and "end" criteria
+            if 'start' in self.options.keys():
+                self._fix_range_criteria('start')
+            if 'end' in self.options.keys():
+                self._fix_range_criteria('end')
+            if not self.options.get('review_state'):
+                # We need to override the calendar default behaviour with review state
+                self.options['review_state'] = all_review_states
 
         weeks = self.calendar.getEventsForCalendar(month, year, **self.options)
         for week in weeks:

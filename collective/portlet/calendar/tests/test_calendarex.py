@@ -1,22 +1,17 @@
 import unittest2 as unittest
-
-from zope.component import getUtility, getMultiAdapter
-
+from DateTime import DateTime
+from Products.GenericSetup.utils import _getDottedName
+from collective.portlet.calendar import calendar
+from collective.portlet.calendar.calendar import Renderer
+from collective.portlet.calendar.testing import INTEGRATION_TESTING
 from plone.app.testing import TEST_USER_ID
 from plone.app.testing import setRoles
-
-from Products.GenericSetup.utils import _getDottedName
-
-from plone.portlets.interfaces import IPortletType
-from plone.portlets.interfaces import IPortletManager
 from plone.portlets.interfaces import IPortletAssignment
 from plone.portlets.interfaces import IPortletDataProvider
+from plone.portlets.interfaces import IPortletManager
 from plone.portlets.interfaces import IPortletRenderer
-
-from DateTime import DateTime
-from collective.portlet.calendar import calendar
-
-from collective.portlet.calendar.testing import INTEGRATION_TESTING
+from plone.portlets.interfaces import IPortletType
+from zope.component import getUtility, getMultiAdapter
 
 
 class TestPortlet(unittest.TestCase):
@@ -82,6 +77,92 @@ class TestPortlet(unittest.TestCase):
         renderer = getMultiAdapter((context, request, view,
                                     manager, assignment), IPortletRenderer)
         self.assertTrue(isinstance(renderer, calendar.Renderer))
+
+
+class TestRendererBase(unittest.TestCase):
+
+    layer = INTEGRATION_TESTING
+
+    def setUp(self):
+        self.renderer = Renderer(self.layer['portal'], self.layer['request'],
+                                 None, None, {})
+        year = 2014
+        month = 5
+        self.renderer.update()
+        calendar = self.renderer.calendar
+        last_day = calendar._getCalendar().monthrange(year, month)[1]
+        self.first_date = calendar.getBeginAndEndTimes(1, month, year)[0]
+        self.last_date = calendar.getBeginAndEndTimes(last_day, month, year)[1]
+        self.renderer.year = year
+        self.renderer.month = month
+
+    def test_fix_range_criteria_start(self):
+        renderer = self.renderer
+        d1 = DateTime('2014/05/10')
+        renderer.options = {'start': {'query': d1, 'range': 'min'}}
+        renderer._fix_range_criteria('start')
+        self.assertEqual(renderer.options,
+                         {'start': {'query': [d1, self.last_date],
+                                    'range': 'minmax'}})
+        d1 = DateTime('2014/05/25')
+        renderer.options = {'start': {'query': d1, 'range': 'max'}}
+        renderer._fix_range_criteria('start')
+        self.assertEqual(renderer.options,
+                         {'start': {'query': [d1, self.last_date],
+                                    'range': 'max'}})
+        d1 = DateTime('2014/05/10')
+        d2 = DateTime('2014/06/08')
+        renderer.options = {'start': {'query': [d1, d2], 'range': 'minmax'}}
+        renderer._fix_range_criteria('start')
+        self.assertEqual(renderer.options,
+                         {'start': {'query': [d1, self.last_date],
+                                    'range': 'minmax'}})
+
+    def test_fix_range_criteria_start_new_collection(self):
+        # WTF: new style collections are returning "strings" 
+        renderer = self.renderer
+        d1 = '2014/05/10'
+        renderer.options = {'start': {'query': d1, 'range': 'min'}}
+        renderer._fix_range_criteria('start')
+        self.assertEqual(renderer.options,
+                         {'start': {'query': [DateTime(d1), self.last_date],
+                                    'range': 'minmax'}})
+        d1 = DateTime('2014/05/25')
+        renderer.options = {'start': {'query': d1, 'range': 'max'}}
+        renderer._fix_range_criteria('start')
+        self.assertEqual(renderer.options,
+                         {'start': {'query': [d1, self.last_date],
+                                    'range': 'max'}})
+        d1 = DateTime('2014/05/10')
+        d2 = DateTime('2014/06/08')
+        renderer.options = {'start': {'query': [d1, d2], 'range': 'minmax'}}
+        renderer._fix_range_criteria('start')
+        self.assertEqual(renderer.options,
+                         {'start': {'query': [d1, self.last_date],
+                                    'range': 'minmax'}})
+
+
+    def test_fix_range_criteria_end(self):
+        renderer = self.renderer
+        d1 = DateTime('2014/05/20')
+        renderer.options = {'end': {'query': d1, 'range': 'max'}}
+        renderer._fix_range_criteria('end')
+        self.assertEqual(renderer.options,
+                         {'end': {'query': [d1, self.first_date],
+                                  'range': 'minmax'}})
+        d1 = DateTime('2014/05/15')
+        renderer.options = {'end': {'query': d1, 'range': 'min'}}
+        renderer._fix_range_criteria('end')
+        self.assertEqual(renderer.options,
+                         {'end': {'query': [d1, self.first_date],
+                                  'range': 'min'}})
+        d1 = DateTime('2014/02/05')
+        d2 = DateTime('2014/05/15')
+        renderer.options = {'end': {'query': [d1, d2], 'range': 'minmax'}}
+        renderer._fix_range_criteria('end')
+        self.assertEqual(renderer.options,
+                         {'end': {'query': [d2, self.first_date],
+                                  'range': 'minmax'}})
 
 
 class TestRenderer(unittest.TestCase):
@@ -240,7 +321,7 @@ class TestRenderer(unittest.TestCase):
         r.update()
         self.assertEqual(r.root(), path)
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 3)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 5)
 
         # Render a portlet with a root assignment to folder1
         path = '/folder1'
@@ -248,7 +329,7 @@ class TestRenderer(unittest.TestCase):
         r.update()
         self.assertEqual(r.root(), '%s%s' % (self.portal_path, path))
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 1)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 2)
 
         # Render a portlet with a root assignment to folder2
         path = '/folder2'
@@ -271,14 +352,14 @@ class TestRenderer(unittest.TestCase):
         # kw are ignored and also content type, so published events are
         # returned
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 2)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 4)
         # adding a new criteria to the collection change results
         state_crit = self.portal['example-events'].addCriterion(
                                                             'review_state',
                                                             'ATListCriterion')
-        state_crit.setValue(['private', 'published'])
+        state_crit.setValue(['published'])
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 4)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 2)
 
     def testEventsCollectionSearch(self):
         # Create the events
@@ -290,18 +371,17 @@ class TestRenderer(unittest.TestCase):
                           kw=['Foo', ]))
         r.update()
 
-        # kw are ignored and also content type, so published events are
-        # returned
+        # kw are ignored and also content type, so all event's are returned
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 3)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 5)
         # adding a new criteria to the collection change results
         collection = self.portal['example-events']
         new_filter = [{'i': 'review_state',
                        'o': 'plone.app.querystring.operation.selection.is',
-                       'v': ['published', 'private']}]
+                       'v': ['published']}]
         collection.setQuery(collection.getQuery(raw=True) + new_filter)
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 5)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 3)
 
     def testEventsKwSearch(self):
         # Create the events
@@ -312,7 +392,7 @@ class TestRenderer(unittest.TestCase):
         r.update()
         self.assertEqual(r.root(), path)
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 3)
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 5)
 
         # Render a portlet showing only Meetings
         kw = ['Meeting', ]
@@ -332,6 +412,33 @@ class TestRenderer(unittest.TestCase):
         kw = ['Meeting', ]
         path = '/folder1'
         r = self.renderer(assignment=calendar.Assignment(root=path, kw=kw))
+        r.update()
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 1)
+        self.assertEqual(r.root(), '%s%s' % (self.portal_path, path))
+
+    def testEventsReviewStateSearch(self):
+        # Create the events
+        self.createEvents()
+        # Render a portlet without a root assignment
+        path = self.portal_path
+        r = self.renderer(assignment=calendar.Assignment())
+        r.update()
+        self.assertEqual(r.root(), path)
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 5)
+
+        # Render a portlet showing only private events
+        review_state = ['private', ]
+        r = self.renderer(assignment=calendar.Assignment(review_state=review_state))
+        r.update()
+        self.assertEqual(
+                    self.countEventsInPortlet(r.getEventsForCalendar()), 2)
+
+        # Render a portlet showing published events under folder1
+        review_state = ['published', ]
+        path = '/folder1'
+        r = self.renderer(assignment=calendar.Assignment(root=path, review_state=review_state))
         r.update()
         self.assertEqual(
                     self.countEventsInPortlet(r.getEventsForCalendar()), 1)

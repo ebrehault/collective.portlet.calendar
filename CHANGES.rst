@@ -4,16 +4,26 @@ Changelog
 1.0b3 (unreleased)
 ^^^^^^^^^^^^^^^^^^
 
-- Calendar URI querystring parameters are now applied when root object id used
+- Change in the review state usage behavior: if no value is specified do not
+  use the global site settings (that was a bit unexpected) but do not filter
+  by review state at all.
   [keul]
-- Fixed issue in the ``_render_cachekey`` method that gives some unexpected results
-  with collections under certain circumstances
+- Be sure that start/end criteria in collections never use values outside the
+  current month
+  [keul]
+- Fixed issue that make calendar display weird days when Collections use start
+  or end criteria as calendar machinery already do
+  [keul]
+- Calendar URI querystring parameters are now applied when root object is used
+  [keul]
+- Fixed issue in the ``_render_cachekey`` method that gives some unexpected
+  results with collections under certain circumstances
   [keul]
 - Fixed illogical behavior with collections: if you do not provide any
   ``review_state`` filter, a static ("published", "private") was used
   [keul]
 - Folder were not selectable as root object [keul]
-- Drop support for Plone 4.0 and 4.1.
+- **Drop support for Plone 4.0 and 4.1**.
   [hvelarde]
 - Remove also browserlayer when running unistall profile. [keul]
 - Uninstall profiles was not run on uninstall [keul]
@@ -27,7 +37,7 @@ Changelog
 - Fixed issue when not providing a portlet name. [keul]
 - Fixed layout: when not providing a title, the portlet looks like default
   Plone calendar. [keul]
-- Fixed portlet cache key. It was not looking for additional paramenters.
+- Fixed portlet cache key. It was not looking for additional parameters.
   [keul]
 - Calendar portlet title in management screen were stored forever. [keul]
 
