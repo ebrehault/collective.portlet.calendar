@@ -26,6 +26,40 @@ from zope.formlib import form
 from zope.interface import implements
 
 
+def add_cachekey(key, brain):
+    key.write(brain.getPath())
+    key.write('\n')
+    key.write(brain.modified)
+    key.write('\n\n')
+
+
+def _define_search_options(renderer, options):
+    """Obtain a proper query to be used in search"""
+    catalog = getToolByName(renderer.context, 'portal_catalog')
+    all_review_states = catalog.uniqueValuesFor('review_state')
+    if not options:
+        # Folder, or site root.
+        options['path'] = renderer.root()
+        if renderer.data.kw:
+            options['Subject'] = renderer.data.kw
+        options['review_state'] = renderer.data.review_state \
+            if renderer.data.review_state else all_review_states
+    else:
+        # Collection
+        # Type check: seems that new style collections are returning parameters as tuples
+        # this is not compatible with ZTUtils.make_query
+        untuple(options)
+        # We must handle in a special way "start" and "end" criteria
+        if 'start' in options.keys():
+            renderer._fix_range_criteria('start')
+        if 'end' in options.keys():
+            renderer._fix_range_criteria('end')
+        if not options.get('review_state'):
+            # We need to override the calendar default behaviour with review state
+            options['review_state'] = all_review_states
+    return options
+
+
 def _render_cachekey(fun, self):
     context = aq_inner(self.context)
     if not self.updated:
@@ -51,43 +85,26 @@ def _render_cachekey(fun, self):
         start = DateTime('%s/%s/1' % (year, month))
         end = DateTime('%s/%s/1 23:59:59' % self.getNextMonth(year, month)) - 1
 
-        def add(brain):
-            key.write(brain.getPath())
-            key.write('\n')
-            key.write(brain.modified)
-            key.write('\n\n')
-
         catalog = getToolByName(context, 'portal_catalog')
-        path = navigation_root_path
-        review_state = self.data.review_state or \
-            catalog.uniqueValuesFor('review_state')
 
-        options = {}
+        self.options = {}
         if navigation_root_path:
             root_content = self.context.restrictedTraverse(navigation_root_path)
             if IATTopic.providedBy(root_content):
-                options = root_content.buildQuery()
+                self.options = root_content.buildQuery()
             elif ICollection.providedBy(root_content):
-                options = parseFormquery(root_content, root_content.getField('query').getRaw(root_content))
+                self.options = parseFormquery(root_content,
+                                              root_content.getField('query').getRaw(root_content))
+            print >> key, root_content.modified()
 
-        if options:
-            # Collection
-            options['start'] = {'query': end, 'range': 'max'}
-            options['end'] = {'query': start, 'range': 'min'}
-            if not options.get('review_state'):
-                options['review_state'] = self.calendar.getCalendarStates()
-            brains = catalog(**options)
-        else:
-            # Folder or site root
-            brains = catalog(
-                portal_type=self.calendar.getCalendarTypes(),
-                start={'query': end, 'range': 'max'},
-                end={'query': start, 'range': 'min'},
-                review_state=review_state,
-                path=path)
+        self.options['start'] = {'query': end, 'range': 'max'}
+        self.options['end'] = {'query': start, 'range': 'min'}
+
+        _define_search_options(self, self.options)
+        brains = catalog(**self.options)
 
         for brain in brains:
-            add(brain)
+            add_cachekey(key, brain)
 
         return key.getvalue()
 
@@ -260,12 +277,7 @@ class Renderer(base.Renderer):
         self.options[index] = criteria
 
     def getEventsForCalendar(self):
-        context = aq_inner(self.context)
-        year = self.year
-        month = self.month
         navigation_root_path = self.root()
-        catalog = getToolByName(self.context, 'portal_catalog')
-        all_review_states = catalog.uniqueValuesFor('review_state')
 
         self.options = {}
         if navigation_root_path:
@@ -276,27 +288,14 @@ class Renderer(base.Renderer):
                 elif ICollection.providedBy(root_content):
                     self.options = parseFormquery(root_content, root_content.getField('query').getRaw(root_content))
 
-        if not self.options:
-            # Folder, or site root.
-            self.options['path'] = navigation_root_path
-            if self.data.kw:
-                self.options['Subject'] = self.data.kw
-            self.options['review_state'] = self.data.review_state \
-                if self.data.review_state else all_review_states
-        else:
-            # Collection
-            # Type check: seems that new style collections are returning parameters as tuples
-            # this is not compatible with ZTUtils.make_query
-            untuple(self.options)
-            # We must handle in a special way "start" and "end" criteria
-            if 'start' in self.options.keys():
-                self._fix_range_criteria('start')
-            if 'end' in self.options.keys():
-                self._fix_range_criteria('end')
-            if not self.options.get('review_state'):
-                # We need to override the calendar default behaviour with review state
-                self.options['review_state'] = all_review_states
+        _define_search_options(self, self.options)
+        weeks = self._get_calendar_structure()
+        return weeks
 
+    def _get_calendar_structure(self):
+        context = aq_inner(self.context)
+        year = self.year
+        month = self.month
         weeks = self.calendar.getEventsForCalendar(month, year, **self.options)
         for week in weeks:
             for day in week:
