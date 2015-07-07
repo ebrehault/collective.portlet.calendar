@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import unittest2 as unittest
 from DateTime import DateTime
 from Products.GenericSetup.utils import _getDottedName
@@ -30,9 +31,10 @@ class TestPortlet(unittest.TestCase):
         portlet = getUtility(IPortletType, name='portlets.CalendarEx')
         registered_interfaces = [_getDottedName(i) for i in portlet.for_]
         registered_interfaces.sort()
-        self.assertEqual(['plone.app.portlets.interfaces.IColumn',
-          'plone.app.portlets.interfaces.IDashboard'],
-          registered_interfaces)
+        self.assertEqual(
+            ['plone.app.portlets.interfaces.IColumn',
+             'plone.app.portlets.interfaces.IDashboard'],
+            registered_interfaces)
 
     def testInterfaces(self):
         portlet = calendar.Assignment()
@@ -42,7 +44,7 @@ class TestPortlet(unittest.TestCase):
     def testInvokeAddview(self):
         portlet = getUtility(IPortletType, name='portlets.CalendarEx')
         mapping = self.portal.restrictedTraverse(
-                                '++contextportlets++plone.leftcolumn')
+            '++contextportlets++plone.leftcolumn')
         for m in mapping.keys():
             del mapping[m]
         addview = mapping.restrictedTraverse('+/' + portlet.addview)
@@ -55,7 +57,7 @@ class TestPortlet(unittest.TestCase):
     def testPortletProperties(self):
         portlet = getUtility(IPortletType, name='portlets.CalendarEx')
         mapping = self.portal.restrictedTraverse(
-                                '++contextportlets++plone.leftcolumn')
+            '++contextportlets++plone.leftcolumn')
         for m in mapping.keys():
             del mapping[m]
         addview = mapping.restrictedTraverse('+/' + portlet.addview)
@@ -141,7 +143,6 @@ class TestRendererBase(unittest.TestCase):
                          {'start': {'query': [d1, self.last_date],
                                     'range': 'minmax'}})
 
-
     def test_fix_range_criteria_end(self):
         renderer = self.renderer
         d1 = DateTime('2014/05/20')
@@ -177,8 +178,14 @@ class TestRenderer(unittest.TestCase):
         self.portal.portal_workflow.setChainForPortalTypes(
             ['Folder', 'Event'], ['simple_publication_workflow'])
 
-    def renderer(self, context=None, request=None, view=None,
-        manager=None, assignment=None):
+    def renderer(
+        self,
+        context=None,
+        request=None,
+        view=None,
+        manager=None,
+        assignment=None
+    ):
         context = context or self.portal
         request = request or self.portal.REQUEST
         view = view or self.portal.restrictedTraverse('@@plone')
@@ -203,10 +210,10 @@ class TestRenderer(unittest.TestCase):
         # Create subfolders
         self.portal.invokeFactory('Folder', 'folder1',)
         self.portal.portal_workflow.doActionFor(
-                                    self.portal['folder1'], 'publish')
+            self.portal['folder1'], 'publish')
         self.portal.invokeFactory('Folder', 'folder2',)
         self.portal.portal_workflow.doActionFor(
-                                    self.portal['folder2'], 'publish')
+            self.portal['folder2'], 'publish')
 
         # We will add 6 events: 2 on the root folder and 2 on each subfolders
         # Root events
@@ -224,14 +231,14 @@ class TestRenderer(unittest.TestCase):
         # Folder1 events
         start, end = self.genDates(delta=1)
         self.portal.folder1.invokeFactory(
-                                'Event', 'e3', startDate=start, endDate=end)
+            'Event', 'e3', startDate=start, endDate=end)
         o = self.portal.folder1['e3']
         o.setSubject(['Meeting', ])
         self.portal.portal_workflow.doActionFor(
-                                        self.portal.folder1.e3, 'publish')
+            self.portal.folder1.e3, 'publish')
         o.reindexObject()
         self.portal.folder1.invokeFactory(
-                                'Event', 'e4', startDate=start, endDate=end)
+            'Event', 'e4', startDate=start, endDate=end)
         o = self.portal.folder1['e4']
         o.setSubject(['Workshop', ])
         o.reindexObject()
@@ -239,11 +246,11 @@ class TestRenderer(unittest.TestCase):
         # Folder2 events
         start, end = self.genDates(delta=2)
         self.portal.folder2.invokeFactory(
-                            'Event', 'e5', startDate=start, endDate=end)
+            'Event', 'e5', startDate=start, endDate=end)
         o = self.portal.folder2['e5']
         o.setSubject(['Party', 'OpenBar', ])
         self.portal.portal_workflow.doActionFor(
-                                        self.portal.folder2.e5, 'publish')
+            self.portal.folder2.e5, 'publish')
         o.reindexObject()
 
     def createTopicEvents(self):
@@ -291,7 +298,7 @@ class TestRenderer(unittest.TestCase):
 
     def test_event_created_last_day_of_month_invalidate_cache(self):
         # First render the calendar portlet when there's no events
-        self.portal.REQUEST["ACTUAL_URL"] = self.portal.REQUEST["SERVER_URL"]
+        self.portal.REQUEST['ACTUAL_URL'] = self.portal.REQUEST['SERVER_URL']
         r = self.renderer(assignment=calendar.Assignment())
         html = r.render()
 
@@ -321,7 +328,7 @@ class TestRenderer(unittest.TestCase):
         r.update()
         self.assertEqual(r.root(), path)
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 5)
+            self.countEventsInPortlet(r.getEventsForCalendar()), 5)
 
         # Render a portlet with a root assignment to folder1
         path = '/folder1'
@@ -329,7 +336,7 @@ class TestRenderer(unittest.TestCase):
         r.update()
         self.assertEqual(r.root(), '%s%s' % (self.portal_path, path))
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 2)
+            self.countEventsInPortlet(r.getEventsForCalendar()), 2)
 
         # Render a portlet with a root assignment to folder2
         path = '/folder2'
@@ -337,7 +344,7 @@ class TestRenderer(unittest.TestCase):
         r.update()
         self.assertEqual(r.root(), '%s%s' % (self.portal_path, path))
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 1)
+            self.countEventsInPortlet(r.getEventsForCalendar()), 1)
 
     def testEventsTopicSearch(self):
         # Create the events
@@ -352,14 +359,13 @@ class TestRenderer(unittest.TestCase):
         # kw are ignored and also content type, so published events are
         # returned
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 4)
+            self.countEventsInPortlet(r.getEventsForCalendar()), 4)
         # adding a new criteria to the collection change results
         state_crit = self.portal['example-events'].addCriterion(
-                                                            'review_state',
-                                                            'ATListCriterion')
+            'review_state', 'ATListCriterion')
         state_crit.setValue(['published'])
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 2)
+            self.countEventsInPortlet(r.getEventsForCalendar()), 2)
 
     def testEventsCollectionSearch(self):
         # Create the events
@@ -373,7 +379,7 @@ class TestRenderer(unittest.TestCase):
 
         # kw are ignored and also content type, so all event's are returned
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 5)
+            self.countEventsInPortlet(r.getEventsForCalendar()), 5)
         # adding a new criteria to the collection change results
         collection = self.portal['example-events']
         new_filter = [{'i': 'review_state',
@@ -381,7 +387,7 @@ class TestRenderer(unittest.TestCase):
                        'v': ['published']}]
         collection.setQuery(collection.getQuery(raw=True) + new_filter)
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 3)
+            self.countEventsInPortlet(r.getEventsForCalendar()), 3)
 
     def testEventsKwSearch(self):
         # Create the events
@@ -392,21 +398,21 @@ class TestRenderer(unittest.TestCase):
         r.update()
         self.assertEqual(r.root(), path)
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 5)
+            self.countEventsInPortlet(r.getEventsForCalendar()), 5)
 
         # Render a portlet showing only Meetings
         kw = ['Meeting', ]
         r = self.renderer(assignment=calendar.Assignment(kw=kw))
         r.update()
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 2)
+            self.countEventsInPortlet(r.getEventsForCalendar()), 2)
 
         # Render a portlet showing only Parties
         kw = ['Party', ]
         r = self.renderer(assignment=calendar.Assignment(kw=kw))
         r.update()
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 1)
+            self.countEventsInPortlet(r.getEventsForCalendar()), 1)
 
         # Render a portlet showing Meetings under folder1
         kw = ['Meeting', ]
@@ -414,7 +420,7 @@ class TestRenderer(unittest.TestCase):
         r = self.renderer(assignment=calendar.Assignment(root=path, kw=kw))
         r.update()
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 1)
+            self.countEventsInPortlet(r.getEventsForCalendar()), 1)
         self.assertEqual(r.root(), '%s%s' % (self.portal_path, path))
 
     def testEventsReviewStateSearch(self):
@@ -426,14 +432,14 @@ class TestRenderer(unittest.TestCase):
         r.update()
         self.assertEqual(r.root(), path)
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 5)
+            self.countEventsInPortlet(r.getEventsForCalendar()), 5)
 
         # Render a portlet showing only private events
         review_state = ['private', ]
         r = self.renderer(assignment=calendar.Assignment(review_state=review_state))
         r.update()
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 2)
+            self.countEventsInPortlet(r.getEventsForCalendar()), 2)
 
         # Render a portlet showing published events under folder1
         review_state = ['published', ]
@@ -441,5 +447,5 @@ class TestRenderer(unittest.TestCase):
         r = self.renderer(assignment=calendar.Assignment(root=path, review_state=review_state))
         r.update()
         self.assertEqual(
-                    self.countEventsInPortlet(r.getEventsForCalendar()), 1)
+            self.countEventsInPortlet(r.getEventsForCalendar()), 1)
         self.assertEqual(r.root(), '%s%s' % (self.portal_path, path))

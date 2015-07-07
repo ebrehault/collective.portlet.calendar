@@ -26,6 +26,40 @@ from zope.formlib import form
 from zope.interface import implements
 
 
+def add_cachekey(key, brain):
+    key.write(brain.getPath())
+    key.write('\n')
+    key.write(brain.modified)
+    key.write('\n\n')
+
+
+def _define_search_options(renderer, options):
+    """Obtain a proper query to be used in search"""
+    catalog = getToolByName(renderer.context, 'portal_catalog')
+    all_review_states = catalog.uniqueValuesFor('review_state')
+    if not options:
+        # Folder, or site root.
+        options['path'] = renderer.root()
+        if renderer.data.kw:
+            options['Subject'] = renderer.data.kw
+        options['review_state'] = renderer.data.review_state \
+            if renderer.data.review_state else all_review_states
+    else:
+        # Collection
+        # Type check: seems that new style collections are returning parameters as tuples
+        # this is not compatible with ZTUtils.make_query
+        untuple(options)
+        # We must handle in a special way "start" and "end" criteria
+        if 'start' in options.keys():
+            renderer._fix_range_criteria('start')
+        if 'end' in options.keys():
+            renderer._fix_range_criteria('end')
+        if not options.get('review_state'):
+            # We need to override the calendar default behaviour with review state
+            options['review_state'] = all_review_states
+    return options
+
+
 def _render_cachekey(fun, self):
     context = aq_inner(self.context)
     if not self.updated:
@@ -34,8 +68,8 @@ def _render_cachekey(fun, self):
     if self.calendar.getUseSession():
         raise ram.DontCache()
     else:
-        portal_state = getMultiAdapter((context, self.request),
-                                        name=u'plone_portal_state')
+        portal_state = getMultiAdapter(
+            (context, self.request), name=u'plone_portal_state')
         key = StringIO()
         print >> key, self.data.kw
         print >> key, self.data.review_state
@@ -51,44 +85,26 @@ def _render_cachekey(fun, self):
         start = DateTime('%s/%s/1' % (year, month))
         end = DateTime('%s/%s/1 23:59:59' % self.getNextMonth(year, month)) - 1
 
-        def add(brain):
-            key.write(brain.getPath())
-            key.write('\n')
-            key.write(brain.modified)
-            key.write('\n\n')
-
         catalog = getToolByName(context, 'portal_catalog')
-        path = navigation_root_path
-        review_state = self.data.review_state or \
-                       catalog.uniqueValuesFor('review_state')
 
-        options = {}
+        self.options = {}
         if navigation_root_path:
-            root_content = \
-                    self.context.restrictedTraverse(navigation_root_path)
+            root_content = self.context.restrictedTraverse(navigation_root_path)
             if IATTopic.providedBy(root_content):
-                options = root_content.buildQuery()
+                self.options = root_content.buildQuery()
             elif ICollection.providedBy(root_content):
-                options = parseFormquery(root_content, root_content.getField('query').getRaw(root_content))
+                self.options = parseFormquery(root_content,
+                                              root_content.getField('query').getRaw(root_content))
+            print >> key, root_content.modified()
 
-        if options:
-            # Collection
-            options['start'] = {'query': end, 'range': 'max'}
-            options['end'] = {'query': start, 'range': 'min'}
-            if not options.get('review_state'):
-                options['review_state'] = self.calendar.getCalendarStates()
-            brains = catalog(**options)
-        else:
-            # Folder or site root
-            brains = catalog(
-                portal_type=self.calendar.getCalendarTypes(),
-                start={'query': end, 'range': 'max'},
-                end={'query': start, 'range': 'min'},
-                review_state=review_state,
-                path=path)
+        self.options['start'] = {'query': end, 'range': 'max'}
+        self.options['end'] = {'query': start, 'range': 'min'}
+
+        _define_search_options(self, self.options)
+        brains = catalog(**self.options)
 
         for brain in brains:
-            add(brain)
+            add_cachekey(key, brain)
 
         return key.getvalue()
 
@@ -98,51 +114,56 @@ class ICalendarExPortlet(IPortletDataProvider):
     """
 
     name = schema.TextLine(
-        title=_(u"label_calendarex_title", default=u"Title"),
-        description=_(u"help_calendarex_title",
-                      default=u"The title of this portlet. Leave blank to "
-                               "do not display portlet title."),
+        title=_(u'label_calendarex_title', default=u'Title'),
+        description=_(
+            u'help_calendarex_title',
+            default=u'The title of this portlet. Leave blank to '
+                    u'do not display portlet title.'),
         default=u"",
         required=False)
 
     root = schema.Choice(
-            title=_(u"label_calendarex_root_path", default=u"Root node"),
-            description=_(u'help_calendarex_root',
-                          default=u"You may search for and choose a folder "
-                                    "to act as the root of search for this "
-                                    "portlet. "
-                                    "Leave blank to use the Plone site root. "
-                                    "You can also select a Collection for "
-                                    "get only Events found by it."),
-            required=False,
-            source=SearchableTextSourceBinder(
-                              {'object_provides': [IATTopic.__identifier__,
-                                                   ICollection.__identifier__,
-                                                   IFolderish.__identifier__,
-                                                   IATFolder.__identifier__]},
-                              default_query='path:'))
+        title=_(u'label_calendarex_root_path', default=u'Root node'),
+        description=_(
+            u'help_calendarex_root',
+            default=u'You may search for and choose a folder '
+                    u'to act as the root of search for this '
+                    u'portlet. '
+                    u'Leave blank to use the Plone site root. '
+                    u'You can also select a Collection for '
+                    u'get only Events found by it.'),
+        required=False,
+        source=SearchableTextSourceBinder(
+            {'object_provides': [IATTopic.__identifier__,
+                                 ICollection.__identifier__,
+                                 IFolderish.__identifier__,
+                                 IATFolder.__identifier__]},
+            default_query='path:'))
 
     review_state = schema.Tuple(
-         title=_(u"Review state"),
-         description=_('help_review_state',
-                       default=u"Filter contents using the review state. "
-                                "Leave blank to use the site default. "
-                                "This filter will be ignored if you select a "
-                                "collection as \"Root node\""),
-         default=(),
-         value_type=schema.Choice(
-                        vocabulary='plone.app.vocabularies.WorkflowStates'),
-         required=False)
+        title=_(u'Review state'),
+        description=_(
+            'help_review_state',
+            default=u'Filter contents using the review state. '
+                    u'Leave blank to use the site default. '
+                    u'This filter will be ignored if you select a '
+                    u'collection as "Root node"'),
+        default=(),
+        value_type=schema.Choice(
+            vocabulary='plone.app.vocabularies.WorkflowStates'),
+        required=False)
 
-    kw = schema.Tuple(title=_(u"Keywords"),
-                     description=_('help_keywords',
-                                   default=u"Keywords to be search for. "
-                                            "This filter will be ignored if "
-                                            "you select a collection as "
-                                            "\"Root node\""),
-                     default=(),
-                     value_type=schema.TextLine()
-                     )
+    kw = schema.Tuple(
+        title=_(u'Keywords'),
+        description=_(
+            'help_keywords',
+            default=u'Keywords to be search for. '
+                    u'This filter will be ignored if '
+                    u'you select a collection as '
+                    u'"Root node"'),
+        default=(),
+        value_type=schema.TextLine()
+    )
 
 
 def untuple(options):
@@ -212,8 +233,8 @@ class Renderer(base.Renderer):
         return self.data.name or ''
 
     def root(self):
-        portal_state = getMultiAdapter((self.context, self.request),
-                                        name=u'plone_portal_state')
+        portal_state = getMultiAdapter(
+            (self.context, self.request), name=u'plone_portal_state')
         if self.data.root:
             navigation_root_path = '%s%s' % (portal_state.navigation_root_path(), self.data.root)
         else:
@@ -256,12 +277,7 @@ class Renderer(base.Renderer):
         self.options[index] = criteria
 
     def getEventsForCalendar(self):
-        context = aq_inner(self.context)
-        year = self.year
-        month = self.month
         navigation_root_path = self.root()
-        catalog = getToolByName(self.context, 'portal_catalog')
-        all_review_states = catalog.uniqueValuesFor('review_state')
 
         self.options = {}
         if navigation_root_path:
@@ -272,27 +288,14 @@ class Renderer(base.Renderer):
                 elif ICollection.providedBy(root_content):
                     self.options = parseFormquery(root_content, root_content.getField('query').getRaw(root_content))
 
-        if not self.options:
-            # Folder, or site root.
-            self.options['path'] = navigation_root_path
-            if self.data.kw:
-                self.options['Subject'] = self.data.kw
-            self.options['review_state'] = self.data.review_state \
-                    if self.data.review_state else all_review_states
-        else:
-            # Collection
-            # Type check: seems that new style collections are returning parameters as tuples
-            # this is not compatible with ZTUtils.make_query
-            untuple(self.options)
-            # We must handle in a special way "start" and "end" criteria
-            if 'start' in self.options.keys():
-                self._fix_range_criteria('start')
-            if 'end' in self.options.keys():
-                self._fix_range_criteria('end')
-            if not self.options.get('review_state'):
-                # We need to override the calendar default behaviour with review state
-                self.options['review_state'] = all_review_states
+        _define_search_options(self, self.options)
+        weeks = self._get_calendar_structure()
+        return weeks
 
+    def _get_calendar_structure(self):
+        context = aq_inner(self.context)
+        year = self.year
+        month = self.month
         weeks = self.calendar.getEventsForCalendar(month, year, **self.options)
         for week in weeks:
             for day in week:
@@ -303,8 +306,8 @@ class Renderer(base.Renderer):
                 if day['event']:
                     cur_date = DateTime(year, month, daynumber)
                     localized_date = [self._ts.ulocalized_time(cur_date, context=context, request=self.request)]
-                    day['eventstring'] = '\n'.join(localized_date + [' %s' %
-                        self.getEventString(e) for e in day['eventslist']])
+                    day['eventstring'] = '\n'.join(
+                        localized_date + [' %s' % self.getEventString(e) for e in day['eventslist']])
                     day['date_string'] = '%s-%s-%s' % (year, month, daynumber)
         return weeks
 
@@ -316,8 +319,8 @@ class Renderer(base.Renderer):
 class AddForm(base_portlet.AddForm):
     form_fields = form.Fields(ICalendarExPortlet)
     form_fields['root'].custom_widget = UberSelectionWidget
-    label = _(u"Add Calendar Extended Portlet")
-    description = _(u"This calendar portlet allows choosing a subpath.")
+    label = _(u'Add Calendar Extended Portlet')
+    description = _(u'This calendar portlet allows choosing a subpath.')
 
     def create(self, data):
         return Assignment(**data)
@@ -326,5 +329,5 @@ class AddForm(base_portlet.AddForm):
 class EditForm(base_portlet.EditForm):
     form_fields = form.Fields(ICalendarExPortlet)
     form_fields['root'].custom_widget = UberSelectionWidget
-    label = _(u"Edit Calendar Extended Portlet")
-    description = _(u"This calendar portlet allows choosing a subpath.")
+    label = _(u'Edit Calendar Extended Portlet')
+    description = _(u'This calendar portlet allows choosing a subpath.')

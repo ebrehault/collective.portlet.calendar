@@ -14,5 +14,5 @@ def test_suite():
         layered(doctest.DocFileSuite('tests/functional.txt',
                                      package='collective.portlet.calendar'),
                 layer=FUNCTIONAL_TESTING),
-        ])
+    ])
     return suite

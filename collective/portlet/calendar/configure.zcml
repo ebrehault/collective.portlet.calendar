@@ -6,7 +6,7 @@
     xmlns:i18n="http://namespaces.zope.org/i18n"
     i18n_domain="collective.portlet.calendar">
 
-    <five:registerPackage package="." initialize=".initialize" />
+    <five:registerPackage package="." />
 
     <include package="plone.app.portlets" />
 
@@ -39,8 +39,5 @@
 
     <i18n:registerTranslations directory="locales" />
     <include package=".browser" />
-    <include package=".upgrades" />
-
-    <!-- -*- extra stuff goes here -*- -->
 
 </configure>
