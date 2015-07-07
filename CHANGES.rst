@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-1.0b3 (unreleased)
+1.0b3 (2015-07-07)
 ^^^^^^^^^^^^^^^^^^
 
 - Change in the review state usage behavior: if no value is specified do not
