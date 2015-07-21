@@ -49,7 +49,8 @@ def _define_search_options(renderer, options):
         # Type check: seems that new style collections are returning parameters as tuples
         # this is not compatible with ZTUtils.make_query
         untuple(options)
-        # We must handle in a special way "start" and "end" criteria
+        # We must handle in a special way "start" and "end" criteria as they are commonly
+        # already handled by calend machinery itself
         if 'start' in options.keys():
             renderer._fix_range_criteria('start')
         if 'end' in options.keys():
