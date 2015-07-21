@@ -7,7 +7,8 @@ Changelog
 - Fixed and issue with default review_states set, that was of tuple type,
   so catalog uncompatible
   [keul]
-
+- Fixed logic issues with ``start`` and ``end`` criteria used by collections
+  [keul]
 
 1.0b3 (2015-07-07)
 ^^^^^^^^^^^^^^^^^^

@@ -110,7 +110,7 @@ class TestRendererBase(unittest.TestCase):
         renderer.options = {'start': {'query': d1, 'range': 'max'}}
         renderer._fix_range_criteria('start')
         self.assertEqual(renderer.options,
-                         {'start': {'query': [d1, self.last_date],
+                         {'start': {'query': [d1],
                                     'range': 'max'}})
         d1 = DateTime('2014/05/10')
         d2 = DateTime('2014/06/08')
@@ -133,7 +133,7 @@ class TestRendererBase(unittest.TestCase):
         renderer.options = {'start': {'query': d1, 'range': 'max'}}
         renderer._fix_range_criteria('start')
         self.assertEqual(renderer.options,
-                         {'start': {'query': [d1, self.last_date],
+                         {'start': {'query': [d1],
                                     'range': 'max'}})
         d1 = DateTime('2014/05/10')
         d2 = DateTime('2014/06/08')
@@ -155,7 +155,7 @@ class TestRendererBase(unittest.TestCase):
         renderer.options = {'end': {'query': d1, 'range': 'min'}}
         renderer._fix_range_criteria('end')
         self.assertEqual(renderer.options,
-                         {'end': {'query': [d1, self.first_date],
+                         {'end': {'query': [d1],
                                   'range': 'min'}})
         d1 = DateTime('2014/02/05')
         d2 = DateTime('2014/05/15')
@@ -300,6 +300,7 @@ class TestRenderer(unittest.TestCase):
         # First render the calendar portlet when there's no events
         self.portal.REQUEST['ACTUAL_URL'] = self.portal.REQUEST['SERVER_URL']
         r = self.renderer(assignment=calendar.Assignment())
+        r.update()
         html = r.render()
 
         # Now let's add a new event in the last day of the current month
@@ -317,6 +318,7 @@ class TestRenderer(unittest.TestCase):
 
         # Try to render the calendar portlet again, it must be different now
         r = self.renderer(assignment=calendar.Assignment())
+        r.update()
         self.assertNotEqual(html, r.render(), "Cache key wasn't invalidated")
 
     def testEventsPathSearch(self):
