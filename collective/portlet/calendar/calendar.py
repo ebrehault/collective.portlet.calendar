@@ -257,7 +257,6 @@ class Renderer(base.Renderer):
         criteria = self.options[index]
         if not isinstance(criteria['query'], list):
             criteria['query'] = [criteria['query']]
-
         # New style collection return a string for date criteria... awful but true
         criteria['query'] = [DateTime(d) if isinstance(d, basestring) else d for d in criteria['query']]
         # keep only dates inside the current month
@@ -267,14 +266,14 @@ class Renderer(base.Renderer):
             last_day = self.calendar._getCalendar().monthrange(year, month)[1]
             calendar_date = self.calendar.getBeginAndEndTimes(last_day, month, year)[1]
             # add the last day in the month only if smaller than collection's date
-            if calendar_date<max(criteria['query']) or criteria['range'] != 'max':
+            if not criteria['query'] or calendar_date<max(criteria['query']) or criteria['range'] != 'max':
                 criteria['query'].append(calendar_date)
             if criteria['range'] == 'min':
                 criteria['range'] = 'minmax'
         elif index == 'end':
             calendar_date = self.calendar.getBeginAndEndTimes(1, month, year)[0]
             # add the fist day in the month only if greater than collection's date
-            if calendar_date>min(criteria['query']) or criteria['range'] != 'min':
+            if not criteria['query'] or calendar_date>min(criteria['query']) or criteria['range'] != 'min':
                 criteria['query'].append(calendar_date)
             if criteria['range'] == 'max':
                 criteria['range'] = 'minmax'
