@@ -4,7 +4,9 @@ Changelog
 1.0b4 (unreleased)
 ^^^^^^^^^^^^^^^^^^
 
-- Nothing changed yet.
+- Fixed and issue with default review_states set, that was of tuple type,
+  so catalog uncompatible
+  [keul]
 
 
 1.0b3 (2015-07-07)

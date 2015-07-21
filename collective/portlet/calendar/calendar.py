@@ -36,7 +36,7 @@ def add_cachekey(key, brain):
 def _define_search_options(renderer, options):
     """Obtain a proper query to be used in search"""
     catalog = getToolByName(renderer.context, 'portal_catalog')
-    all_review_states = catalog.uniqueValuesFor('review_state')
+    all_review_states = list(catalog.uniqueValuesFor('review_state'))
     if not options:
         # Folder, or site root.
         options['path'] = renderer.root()
