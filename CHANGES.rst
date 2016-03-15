@@ -4,6 +4,12 @@ Changelog
 1.0b4 (unreleased)
 ^^^^^^^^^^^^^^^^^^
 
+- Fix Subject encoding (so non-ascii characters do not break rendering)
+  [ebrehault]
+
+1.0b4 (unreleased)
+^^^^^^^^^^^^^^^^^^
+
 - Nothing changed yet.
 
 

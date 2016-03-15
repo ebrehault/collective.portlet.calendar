@@ -71,7 +71,7 @@ def _render_cachekey(fun, self):
         portal_state = getMultiAdapter(
             (context, self.request), name=u'plone_portal_state')
         key = StringIO()
-        print >> key, self.data.kw
+        print >> key, [k.encode('utf-8') for k in self.data.kw]
         print >> key, self.data.review_state
         print >> key, self.data.name
         print >> key, portal_state.navigation_root_url()
@@ -296,6 +296,8 @@ class Renderer(base.Renderer):
         context = aq_inner(self.context)
         year = self.year
         month = self.month
+        if self.options.get('Subject', None):
+            self.options['Subject'] = [el.encode('utf-8') for el in self.options['Subject']]
         weeks = self.calendar.getEventsForCalendar(month, year, **self.options)
         for week in weeks:
             for day in week:
