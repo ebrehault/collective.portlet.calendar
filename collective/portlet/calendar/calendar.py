@@ -75,6 +75,7 @@ def _render_cachekey(fun, self):
         print >> key, [k.encode('utf-8') for k in self.data.kw]
         print >> key, self.data.review_state
         print >> key, self.data.name
+        print >> key, self.data.exclude
         print >> key, portal_state.navigation_root_url()
         print >> key, cache.get_language(context, self.request)
         print >> key, self.calendar.getFirstWeekDay()
@@ -141,6 +142,16 @@ class ICalendarExPortlet(IPortletDataProvider):
                                  IATFolder.__identifier__]},
             default_query='path:'))
 
+    exclude = schema.Bool(
+        title=_(u'Exclude path'),
+        description=_(
+            'help_exclude_path',
+            default=u'If selected, the path filter is reversed. '
+                    u'(only items which do NOT belong to the folder are '
+                    u'returned)'),
+        default=False,
+    )
+
     review_state = schema.Tuple(
         title=_(u'Review state'),
         description=_(
@@ -166,15 +177,6 @@ class ICalendarExPortlet(IPortletDataProvider):
         value_type=schema.TextLine()
     )
 
-    exclude = schema.Bool(
-        title=_(u'Exclude keywords'),
-        description=_(
-            'help_exclude_keywords',
-            default=u'If selected, the keywords filter is reversed. '
-                    u'(only items which do NOT contain the listed keywords are '
-                    u'returned)'),
-        default=False,
-    )
 
 
 def untuple(options):
@@ -333,14 +335,15 @@ class Renderer(base.Renderer):
         query_args.update(kw)
 
         ctool = getToolByName(self, 'portal_catalog')
-        if 'Subject' in query_args and len(query_args['Subject']) > 0 and self.data.exclude:
+        if 'path' in query_args and self.data.exclude:
             params = {}
             for key in query_args:
-                if key == "Subject":
+                if key == "path":
                     continue
                 params[key] = query_args[key]
             base_query = ctool.makeAdvancedQuery(params)
-            query = ctool.evalAdvancedQuery(base_query & ~In('Subject', query_args['Subject']))
+            path_query = ctool.makeAdvancedQuery({'path': query_args['path']})
+            query = ctool.evalAdvancedQuery(base_query & ~path_query)
         else:
             query = ctool(**query_args)
 
